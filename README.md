@@ -1,6 +1,6 @@
 # WeatherMule
 
-docs/images/weather-mule.png
+![Weather Mule](docs/images/weather-mule.png)
 
 **Store now. Deliver later.**
 
