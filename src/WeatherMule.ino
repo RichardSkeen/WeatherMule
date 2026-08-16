@@ -1,7 +1,7 @@
 #include <vector>
 #include "WeatherParam.h"
 #include "WeatherRequest.h"
-#include "arduino_secrets.h"
+#include "weathermule-secrets.h"
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
 
