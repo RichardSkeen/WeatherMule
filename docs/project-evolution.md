@@ -298,6 +298,27 @@ This idea may become the central synchronization strategy.
 
 ---
 
+## Documentation TODO
+
+### Required Libraries
+
+WeatherMule should maintain a list of required Arduino libraries so
+new users can compile the project without hunting for dependencies.
+
+Current libraries:
+
+- WiFiNINA
+- WiFiUdp
+- SD (planned)
+- ArduinoJson (planned for current.json, if used)
+
+Future contributors should be able to install all required libraries
+before opening WeatherMule.ino.
+
+Consider adding a "Dependencies" section to quick-start.md.
+
+---
+
 ## Project Motto
 
 The weather does not stop because the internet is down.
