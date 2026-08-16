@@ -4,6 +4,17 @@
 #include "weathermule-secrets.h"
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
+#include <SPI.h>
+
+#include "SdFat.h"
+#include "sdios.h"
+
+const int Chip_Select_Pin = 4;
+
+SdFs sd;
+
+bool sdAvailable = false;
+String currentBoxFile = "";
 
 bool inDesignMode;
 
@@ -29,6 +40,8 @@ void setup() {
   delay(1000);
 
   server.begin();
+
+  sdAvailable = InitializeStorage();
 
   delay(5000);
 
@@ -66,6 +79,8 @@ void loop() {
       }
 
       WeatherRequest weatherRequest(request);
+
+	    AppendToBox(weatherRequest.httpRequest);
 
       if(designModeChanged){
         Serial.println("DesignMode: " + String(inDesignMode));
@@ -109,6 +124,56 @@ void loop() {
   }
 
   delay(1000);
+}
+
+bool InitializeStorage()
+{
+    Serial.println("Initializing SD card...");
+
+    if (!sd.begin(SdSpiConfig(Chip_Select_Pin, SHARED_SPI, SD_SCK_MHZ(4))))
+    {
+        Serial.println("SD initialization failed.");
+
+        if (sd.card() && sd.card()->errorCode())
+        {
+            Serial.print("errorCode: 0x");
+            Serial.println(sd.card()->errorCode(), HEX);
+
+            Serial.print("errorData: 0x");
+            Serial.println(sd.card()->errorData(), HEX);
+        }
+
+        return false;
+    }
+
+    Serial.println("SD card initialized.");
+    return true;
+}
+
+bool AppendToBox(String line)
+{
+    if (!sdAvailable)
+    {
+        return false;
+    }
+
+    FsFile file;
+
+    file = sd.open("current.box",
+        O_WRONLY | O_CREAT | O_APPEND);
+
+    if (!file)
+    {
+        Serial.println("Could not open current.box");
+        return false;
+    }
+
+    file.println(line);
+
+    file.flush();
+    file.close();
+
+    return true;
 }
 
 String MacToString(byte mac[])

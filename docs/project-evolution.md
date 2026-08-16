@@ -298,6 +298,378 @@ This idea may become the central synchronization strategy.
 
 ---
 
+## 2026-08-16 - SD Card Access, exFAT, and the Missing Feed Bucket Incident
+
+![Mule Wreak](images/mule-sd-wreak.png)
+
+### Summary
+
+WeatherMule storage moved from theory to working hardware today.
+
+The Nano 33 IoT was tested on the Arduino Nano Connector Carrier using the onboard microSD card slot. The carrier datasheet confirms that the microSD card slot uses SPI communication and that D4 is the default SD card slave-select pin. Optional SD slave-select jumpers are available on D3 and D2. 
+
+A 128 GB SDXC card formatted as exFAT was used for testing.
+
+### Investigation
+
+Initial testing with the standard Arduino SD library failed during card initialization.
+
+To support exFAT media, SdFat v2.3.0 was installed and tested.
+
+Multiple chip-select pins were tested:
+
+```text
+D4
+D3
+D2
+D10
+D7
+```
+
+SPI speed was reduced to 1 MHz.
+
+All tests failed with:
+
+```text
+errorCode: 0x1
+errorData: 0x0
+```
+
+The Nano 33 IoT reported the expected SPI pins:
+
+```text
+MISO = 12
+MOSI = 11
+SCK  = 13
+SS   = 10
+```
+
+The Connector Carrier datasheet was reviewed to verify SD card SPI wiring and default chip-select assignments.
+
+Several advanced theories were considered:
+
+- Incorrect chip-select pin
+- SPI timing issues
+- Level translators on the carrier
+- SDXC compatibility
+- exFAT compatibility
+- Solder jumper configuration
+- Carrier board design issues
+
+### Root Cause
+
+While verifying that the card was formatted as exFAT, the SD card was removed from the Nano Connector Carrier and inserted into the desktop card reader.
+
+After confirming the card was exFAT, the card was not reinserted into the Nano Connector Carrier before additional testing.
+
+As a result:
+
+```text
+The grass was inspected.
+The grass was Grade A exFAT.
+The wrangler forgot to return the grass to the feed trough.
+The mules did not eat.
+```
+
+### Resolution
+
+The SD card was reinserted into the Nano Connector Carrier.
+
+The SdFat QuickStart test was executed using chip-select pin D4 and immediately succeeded:
+
+```text
+Card successfully initialized.
+
+Card size: 128000 MB
+```
+
+This confirmed:
+
+```text
+SPI communication works.
+The Nano Connector Carrier SD slot works.
+D4 is the correct default SD card chip-select pin.
+The 128 GB SDXC card is supported.
+SdFat can access the card successfully.
+```
+
+### Tokens-of-Fun Accounting
+
+```text
+Engineering Tokens Burned:
+    Reasonable
+
+Tokens-of-Fun Burned:
+    Approximately 50,000
+
+Hardware Replaced:
+    None
+
+Libraries Installed:
+    SdFat v2.3.0
+
+Actual Fix:
+    Put the SD card back into the carrier.
+
+Mules Harmed:
+    0
+
+Wrangler Embarrassment:
+    Educational
+```
+
+### Design Decision
+
+WeatherMule will use:
+
+```text
+SPI
+SdFat v2.3.0
+SdFs
+FsFile
+```
+
+Storage strategy:
+
+```text
+One .box file per day.
+
+Example:
+
+2026-08-16.box
+2026-08-17.box
+2026-08-18.box
+```
+
+Raw weather station requests will be appended to the current day's packbox.
+
+### Lessons Learned
+
+Before investigating:
+
+- SdFat
+- SD libraries
+- SPI timing
+- Level translators
+- Solder jumpers
+- SDXC compatibility
+- exFAT compatibility
+
+Verify the SD card is physically present in the Carrier.
+
+Official WeatherMule troubleshooting sequence:
+
+```text
+1. Verify mule exists.
+2. Verify packbox exists.
+3. Verify grass exists.
+4. Verify grass is located near mule.
+5. Only then investigate electronics.
+```
+
+### Current Status
+
+```text
+Nano 33 IoT                VERIFIED
+Connector Carrier          VERIFIED
+D4 SD_SS Pin               VERIFIED
+128 GB SDXC Card           VERIFIED
+SdFat Access               VERIFIED
+Packbox Strategy           VERIFIED
+
+Next Milestone:
+Write and read the first .box file.
+```
+
+## 2026-08-16 - The Jug-Bust-Head Incident
+
+![Jug of Bust head](images/bust-head.png)
+
+### Summary
+
+The first successful WeatherMule packbox revealed an unexpected flaw in the original storage design.
+
+The initial implementation faithfully stored every incoming HTTP request into the daily packbox.
+
+The mule immediately demonstrated why this was a bad idea.
+
+### Discovery
+
+The first packbox contained legitimate weather observations:
+
+```text
+GET /data/report/&PASSKEY=...
+```
+
+Mixed in among the weather data were several unrelated requests:
+
+```text
+GET /switch-mode HTTP/1.1
+
+GET /favicon.ico HTTP/1.1
+
+GET /Jug-bust-head?proof=90 HTTP/1.1
+```
+
+The WeatherMule faithfully recorded all of them without complaint.
+
+### Root Cause
+
+The original assumption was:
+
+```text
+All requests arriving at WeatherMule are weather requests.
+```
+
+This assumption was disproven within minutes of testing.
+
+While the weather station transmitted meteorological observations, the local wrangler began exploring alternate uses for the communications infrastructure.
+
+The resulting packbox therefore contained both climate data and questionable cargo.
+
+### Design Evolution
+
+WeatherRequest now owns responsibility for determining whether an incoming request is weather related.
+
+Example:
+
+```cpp
+bool IsWeatherRequest;
+```
+
+A request qualifies as weather traffic when:
+
+```cpp
+rawRequest.indexOf("/data/report/") >= 0
+```
+
+Packbox storage is now protected by:
+
+```cpp
+if(weatherRequest.IsWeatherRequest)
+{
+    AppendToBox(weatherRequest.rawRequest);
+}
+```
+
+This prevents non-weather traffic from contaminating the historical archive.
+
+### Important Observation
+
+This incident validated a second architectural decision.
+
+Weather parameters are intentionally stored as:
+
+```cpp
+Name
+Value
+```
+
+pairs rather than a fixed structure.
+
+Future sensors may transmit:
+
+```text
+leakdetector
+soilmoisture
+tanklevel
+waterdepth
+```
+
+in any order.
+
+WeatherMule records what arrives and does not assume a predefined parameter list.
+
+### Packbox Integrity
+
+A packbox represents a historical record of observations.
+
+Packboxes should contain:
+
+```text
+Temperature
+Humidity
+Wind
+Rain
+Solar Radiation
+Barometric Pressure
+```
+
+Packboxes should not contain:
+
+```text
+favicon.ico
+
+switch-mode
+
+Jug-bust-head?proof=90
+
+90 proof whisky
+```
+
+### Official Incident Report
+
+```text
+Incident:
+    Jug-Bust-Head
+
+Classification:
+    Wrangler Generated
+
+Weather Data Lost:
+    None
+
+Weather Data Corrupted:
+    None
+
+Unexpected Cargo:
+    favicon.ico
+    switch-mode
+    jug-bust-head
+
+Root Cause:
+    Wrangler testing activities
+
+Mules Harmed:
+    0
+
+Whisky Consumed:
+    Unknown
+
+Tokens-of-Fun Burned:
+    Approximately 15,000
+```
+
+### Lessons Learned
+
+```text
+Trust the weather station.
+
+Question the wrangler.
+
+Inspect all cargo before loading packboxes.
+```
+
+### Current Status
+
+```text
+SD Storage                VERIFIED
+Packbox Creation          VERIFIED
+Raw Request Logging       VERIFIED
+Weather Request Detection IMPLEMENTED
+
+Next Milestone:
+Create current.json from weather-only requests.
+```
+
+### Historical Note
+
+The illustration accompanying this incident depicts a WeatherMule discovering a jug of 90-proof whisky inside a weather-data packbox while a nearby communications satellite attempts to determine whether "proof" is a valid meteorological measurement.
+
+The satellite remains unconvinced.
+
+--- 
+
 ## Documentation TODO
 
 ### Required Libraries
