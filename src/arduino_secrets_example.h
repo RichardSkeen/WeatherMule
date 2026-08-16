@@ -1,5 +1,6 @@
 #pragma once
 
+// Add project secrets and rename to adruino_secrets.h
 // WiFi
 #define SECRET_SSID "<SSID here>"
 #define SECRET_PASS "<WiFi password here>"
