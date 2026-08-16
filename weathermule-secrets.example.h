@@ -3,7 +3,7 @@
 // Copy this file to arduino_secrets.h and provide your own values.
 //
 // The mule is too stubborn to travel unless you whisper
-// sweet credentials in its ear.
+// sweet credentials into its ear.
 // 
 // 
 // WiFi
