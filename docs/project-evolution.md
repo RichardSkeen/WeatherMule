@@ -111,7 +111,7 @@ This greatly simplifies development because WeatherMule can be tested without di
 Observed that:
 
 ```text
-PASSKEY=B8BF967...
+PASSKEY=PHONYKEY5f3e...
 ```
 
 remains constant between requests.
