@@ -4,8 +4,7 @@
 //
 // The mule is too stubborn to travel unless you whisper
 // sweet credentials into its ear.
-// 
-// 
+
 // WiFi
 #define SECRET_SSID "<SSID here>"
 #define SECRET_PASS "<WiFi password here>"
