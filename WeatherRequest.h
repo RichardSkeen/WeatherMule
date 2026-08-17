@@ -8,6 +8,8 @@ public:
     String httpMethod;
     String httpVersion;
     String httpRequest;
+    bool isWeatherRequest;
+
     std::vector<WeatherParam> Parameters;
 
     // Constructor: receives full request, parses and fills fields
@@ -27,6 +29,8 @@ private:
         // Version: last word
         int lastSpace = request.lastIndexOf(' ');
         httpVersion = (lastSpace > 0) ? request.substring(lastSpace + 1) : "";
+
+        isWeatherRequest = request.indexOf("data/report/") > -1;
 
         // Parameters: after first '&' and before " HTTP/"
         int paramStart = request.indexOf('&');

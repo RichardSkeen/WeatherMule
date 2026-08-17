@@ -28,7 +28,7 @@ void setup() {
 
   inDesignMode = false;
 
-  Serial.println("Connecting to WiFi...");
+  LogInformation("Connecting to WiFi...");
   
   while(WiFi.begin(SECRET_SSID, SECRET_PASS) != WL_CONNECTED)
   {
@@ -46,15 +46,15 @@ void setup() {
   delay(5000);
 
   Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+  LogInformation(WiFi.SSID());
 
   IPAddress ip = WiFi.localIP();
-  Serial.println(ip);
+  LogInformation(ip.toString());
 
   delay(500);
 
-  Serial.println();
-  Serial.println();
+  LogInformation();
+  LogInformation();
 }
 
 void loop() {
@@ -63,59 +63,35 @@ void loop() {
 
   if(client)
   { 
-      designModeChanged = false;
-      giveFeedback = false;
-
       String request = client.readStringUntil('\r');
-
-      if(request.indexOf("/time") > -1)
-      {
-        giveFeedback = true;
-      }
-      else if(request.indexOf("/switch-mode") > -1){
-        inDesignMode = inDesignMode == false;
-        designModeChanged = true;
-        giveFeedback = true;
-      }
 
       WeatherRequest weatherRequest(request);
 
-	    AppendToBox(weatherRequest.httpRequest);
-
-      if(designModeChanged){
-        Serial.println("DesignMode: " + String(inDesignMode));
-      }
-
-      if(inDesignMode) {
-        Serial.println(request);
-
-        for (const WeatherParam& param : weatherRequest.Parameters) {
-          Serial.print(param.Name);
-          Serial.print(": ");
-          Serial.println(param.Value);
-        }
-
-        Serial.println();
-
-        client.println("HTTP/1.1 200 OK");
-        client.println("Content-Type: text/html");
-        client.println("Connection: close");  // close after response
-        client.println(); // IMPORTANT: blank line separates headers from body
-
-        if(giveFeedback)
+      if(weatherRequest.isWeatherRequest){
+        if(AppendToBox(weatherRequest.httpRequest))
         {
-
-          client.println("<!DOCTYPE html>");
-          client.println("<html>");
-          client.println("<head>");
-          client.println("<title>Weather Mule</title>");
-          client.println("</head>");
-          client.println("<body>");
-          client.println("<p>Design Mode:" + String(inDesignMode == true ? "true" : "false") + "</p>");
-          client.println("</html>");
-          
-
+            Send200(client);
         }
+        else
+        {
+            Send500(client);
+        }
+
+
+        if(inDesignMode){
+          LogInformation(weatherRequest);
+        }
+      }
+	    else if(request.indexOf("/logging/on") > -1){
+        inDesignMode = true;
+        SendDesignModeResponse(client, inDesignMode);
+      }
+      else if(request.indexOf("/logging/off") > -1){
+        inDesignMode = false;
+        SendDesignModeResponse(client, inDesignMode);
+      }
+      else{
+        Send404(client);
       }
 
       delay(500);
@@ -128,29 +104,26 @@ void loop() {
 
 bool InitializeStorage()
 {
-    Serial.println("Initializing SD card...");
+    LogInformation("Initializing SD card...");
 
     if (!sd.begin(SdSpiConfig(Chip_Select_Pin, SHARED_SPI, SD_SCK_MHZ(4))))
     {
-        Serial.println("SD initialization failed.");
+        LogInformation("SD initialization failed.");
 
         if (sd.card() && sd.card()->errorCode())
         {
-            Serial.print("errorCode: 0x");
-            Serial.println(sd.card()->errorCode(), HEX);
-
-            Serial.print("errorData: 0x");
-            Serial.println(sd.card()->errorData(), HEX);
+          LogInformation("errorCode: " + ToHexString(sd.card()->errorCode()));
+          LogInformation("errorData: " + ToHexString(sd.card()->errorData()));
         }
 
         return false;
     }
 
-    Serial.println("SD card initialized.");
+    LogInformation("SD card initialized.");
     return true;
 }
 
-bool AppendToBox(String line)
+bool AppendToBox(const String& line)
 {
     if (!sdAvailable)
     {
@@ -164,7 +137,7 @@ bool AppendToBox(String line)
 
     if (!file)
     {
-        Serial.println("Could not open current.box");
+        LogInformation("Could not open current.box");
         return false;
     }
 
@@ -174,6 +147,80 @@ bool AppendToBox(String line)
     file.close();
 
     return true;
+}
+
+void SendStatusResponse(
+    WiFiClient& client,
+    int statusCode,
+    const String& statusText)
+{
+    client.println("HTTP/1.1 " + String(statusCode) + " " + statusText);
+    client.println("Connection: close"); 
+    client.println(); // IMPORTANT: blank line separates headers from body
+}
+
+void Send200(WiFiClient& client)
+{
+    SendStatusResponse(client, 200, "OK");
+}
+
+void Send400(WiFiClient& client)
+{
+    SendStatusResponse(client, 400, "Bad Request");
+}
+
+void Send500(WiFiClient& client)
+{
+    SendStatusResponse(client, 500, "Internal Server Error");
+}
+
+void Send503(WiFiClient& client)
+{
+    SendStatusResponse(client, 503, "Service Unavailable");
+}
+
+void Send507(WiFiClient& client)
+{
+    SendStatusResponse(client, 507, "Insufficient Storage");
+}
+
+void Send404(WiFiClient& client)
+{
+    SendStatusResponse(client, 404, "Not Found");
+}
+
+void SendDesignModeResponse(WiFiClient& client, bool designMode){
+  SendStatusResponse(client, 200, "OK");
+
+  client.println("<!DOCTYPE html>");
+  client.println("<html>");
+  client.println("<head>");
+  client.println("<title>Weather Mule</title>");
+  client.println("</head>");
+  client.println("<body>");
+  client.println("<p>Design Mode:" + String(designMode == true ? "true" : "false") + "</p>");
+  client.println("</body>");
+  client.println("</html>");
+}
+
+void LogInformation(){
+  Serial.println();
+}
+
+void LogInformation(const String& logThis){
+  Serial.println(logThis);
+}
+
+void LogInformation(WeatherRequest& logWeatherRequest){
+  Serial.println(logWeatherRequest.httpRequest);
+
+  for (const WeatherParam& param : logWeatherRequest.Parameters) {
+    Serial.print(param.Name);
+    Serial.print(": ");
+    Serial.println(param.Value);
+  }
+
+  Serial.println();
 }
 
 String MacToString(byte mac[])
@@ -191,4 +238,11 @@ String MacToString(byte mac[])
   }
 
   return retMac;
+}
+
+String ToHexString(uint32_t value)
+{
+    String result = String(value, HEX);
+    result.toUpperCase();
+    return "0x" + result;
 }
