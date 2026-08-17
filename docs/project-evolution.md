@@ -668,6 +668,215 @@ The illustration accompanying this incident depicts a WeatherMule discovering a 
 
 The satellite remains unconvinced.
 
+## 2026-8-17 - Control Endpoints and HTTP Response Cleanup
+
+### Discovery
+
+Early testing used a `/switch-mode` endpoint that toggled design logging on and off.
+
+```text
+192.168.1.222/switch-mode
+```
+
+While testing from a browser, logging could often be enabled successfully, but attempts to disable logging sometimes resulted in browser connection errors and the mode appearing to switch back on.
+
+### Root Cause
+
+The implementation toggled the state before generating the HTTP response.
+
+Simplified example:
+
+```cpp
+inDesignMode = !inDesignMode;
+
+if(inDesignMode)
+{
+    SendResponse();
+}
+```
+
+When Design Mode was turned OFF, the response generation block was skipped. The browser received no HTTP headers and reported:
+
+```text
+ERR_EMPTY_RESPONSE
+```
+
+Because the request did not complete cleanly, the browser could retry or refresh, resulting in a second request that re-enabled Design Mode.
+
+### Design Change
+
+Toggle endpoints were replaced with explicit REST-style endpoints:
+
+```text
+/logging/on
+/logging/off
+```
+
+Benefits:
+
+- Idempotent operations
+- Browser refreshes are safe
+- Easier troubleshooting
+- Future maintainers do not need to know the current state before issuing commands
+
+Example:
+
+```text
+/logging/on
+/logging/on
+/logging/on
+```
+
+Always leaves logging enabled.
+
+### HTTP Response Strategy
+
+WeatherMule was updated to centralize HTTP response generation.
+
+```cpp
+Send200(...)
+Send400(...)
+Send404(...)
+Send500(...)
+Send503(...)
+Send507(...)
+```
+
+A common response function now generates status headers:
+
+```cpp
+SendStatusResponse(...)
+```
+
+This ensures every request receives a valid HTTP response.
+
+### Error Code Discussion
+
+An early design question was whether WeatherMule should immediately map all storage and communication failures to specific HTTP status codes.
+
+The project intentionally deferred that decision.
+
+At this stage, WeatherMule can determine that a write operation succeeded or failed, but it cannot yet reliably distinguish between:
+
+```text
+SD card unavailable
+Filesystem corruption
+Card removed
+SPI communication failure
+Insufficient storage
+Unexpected internal error
+```
+
+For that reason, returning:
+
+```http
+500 Internal Server Error
+```
+
+for unknown failures may be more appropriate than prematurely classifying failures as:
+
+```http
+503 Service Unavailable
+```
+
+or
+
+```http
+507 Insufficient Storage
+```
+
+Future versions may introduce a structured result such as:
+
+```cpp
+enum BoxWriteResult
+{
+    Success,
+    SdUnavailable,
+    OutOfStorage,
+    OpenFailed
+};
+```
+
+allowing more accurate HTTP status reporting.
+
+### Logging Refactor
+
+Direct `Serial.println()` calls began being replaced with:
+
+```cpp
+LogInformation(...)
+```
+
+Reasons:
+
+- Centralized logging
+- Easier future maintenance
+- Ability to support multiple log destinations
+
+Future logging destinations may include:
+
+- Serial monitor
+- SD card log files
+- Remote telemetry service
+- Combination of all three
+
+This is particularly important because the Silver City deployment location does not allow convenient physical access during winter conditions.
+
+### C++ Optimization Notes
+
+Several functions were reviewed to reduce unnecessary object copying on Arduino hardware.
+
+Example:
+
+```cpp
+void LogInformation(const String& logThis)
+```
+
+instead of:
+
+```cpp
+void LogInformation(String logThis)
+```
+
+Using `const String&`:
+
+- Avoids copying the String
+- Conserves RAM
+- Prevents accidental modification
+- Documents developer intent
+
+The same pattern may be applied throughout the project for read-only String and WeatherRequest parameters.
+
+### Operational Observation
+
+During this work, weather graphs from the Silver City station showed extended overnight flat-line periods that were not present on the Three Rivers station.
+
+This observation increased confidence that Ambient may not be backfilling weather observations during overnight internet outages.
+
+If confirmed, this validates the primary WeatherMule objective:
+
+```text
+Store weather packets locally
+    ↓
+Survive internet outages
+    ↓
+Forward packets later
+    ↓
+Preserve complete weather history
+```
+
+### Lessons Learned
+
+Never trust a toggle exposed through a browser.
+
+A browser can click the same button twice much faster than a mule can explain what happened.
+
+Also, always send a valid HTTP response.
+
+A weather station may tolerate silence.
+
+A web browser will file a complaint.
+
 --- 
 
 ## Documentation TODO
