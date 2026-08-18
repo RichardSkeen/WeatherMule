@@ -68,7 +68,7 @@ void loop() {
       WeatherRequest weatherRequest(request);
 
       if(weatherRequest.isWeatherRequest){
-        if(AppendToBox(weatherRequest.httpRequest))
+        if(AppendToBox(weatherRequest))
         {
             Send200(client);
         }
@@ -123,7 +123,7 @@ bool InitializeStorage()
     return true;
 }
 
-bool AppendToBox(const String& line)
+bool AppendToBox(WeatherRequest& weatherRequest)
 {
     if (!sdAvailable)
     {
@@ -132,7 +132,11 @@ bool AppendToBox(const String& line)
 
     FsFile file;
 
-    file = sd.open("current.box",
+    String readingDate = weatherRequest.GetParamValue("dateutc");
+    int posTime = readingDate.indexOf("+");
+    String fileName = (posTime >= 0) ? readingDate.substring(0, posTime) + ".box" : "unknown.box";
+
+    file = sd.open(fileName,
         O_WRONLY | O_CREAT | O_APPEND);
 
     if (!file)
@@ -141,7 +145,7 @@ bool AppendToBox(const String& line)
         return false;
     }
 
-    file.println(line);
+    file.println(weatherRequest.httpRequest);
 
     file.flush();
     file.close();

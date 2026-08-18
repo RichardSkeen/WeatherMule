@@ -19,6 +19,19 @@ public:
         Parameters = toVector(paramString);
     }
 
+    String GetParamValue(const String& name) const
+    {
+        for (const auto& param : Parameters)
+        {
+            if (param.Name == name)
+            {
+                return param.Value;
+            }
+        }
+
+        return "";
+    }
+
 private:
     // Extracts method and version, returns parameter substring
     String parseRequest(const String& request) {
