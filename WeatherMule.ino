@@ -45,11 +45,14 @@ void setup() {
 
   delay(5000);
 
-  Serial.print("SSID: ");
-  LogInformation(WiFi.SSID());
+  LogInformation("SSID: " + String(WiFi.SSID()));
 
   IPAddress ip = WiFi.localIP();
-  LogInformation(ip.toString());
+  LogInformation("IP: " + ip.toString());
+
+  byte mac[6];
+  WiFi.macAddress(mac);
+  LogInformation("Mac: "+ MacToString(mac));
 
   delay(500);
 

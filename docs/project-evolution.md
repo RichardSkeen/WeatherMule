@@ -877,6 +877,119 @@ A weather station may tolerate silence.
 
 A web browser will file a complaint.
 
+## 2026-08-17 - Daily Packbox Storage and Device Identification
+
+### Daily Packbox Strategy
+
+The original WeatherMule design considered maintaining a special "current" packbox file that would receive all incoming weather packets.
+
+Further analysis showed that packet storage can be naturally partitioned using the weather station's `dateutc` value.
+
+Example:
+
+```text
+dateutc=2026-08-15+22:18:21
+```
+
+The date portion is extracted:
+
+```text
+2026-08-15
+```
+
+and used to generate the packbox filename:
+
+```text
+2026-08-15.box
+```
+
+Benefits:
+
+- No special "current box" logic required
+- Packets automatically group by observation date
+- Easier recovery after multi-day internet outages
+- Simpler upload processing
+- Reduced bookkeeping code
+
+If connectivity is lost for several days:
+
+```text
+2026-08-14.box
+2026-08-15.box
+2026-08-16.box
+2026-08-17.box
+```
+
+each day's observations accumulate in a separate packbox.
+
+During recovery, WeatherMule can process packboxes chronologically, forwarding the oldest stored observations first and continuing until all backlog data has been transmitted.
+
+This approach allows storage organization to be derived directly from the weather station timestamps rather than requiring WeatherMule to maintain additional tracking state.
+
+### Offline Recovery Implications
+
+Because every weather packet already includes a timestamp supplied by the weather station, WeatherMule can reconstruct historical transmission gaps after internet service is restored.
+
+Example:
+
+```text
+Last successful cloud update:
+2026-08-14 10:15:37
+
+Current date:
+2026-08-17
+```
+
+WeatherMule can determine which daily packboxes contain observations that have not yet been forwarded and process them in order.
+
+This design may also support future reconciliation logic comparing locally stored observations with records already present in Ambient Weather services.
+
+### Startup Device Identification
+
+Startup diagnostics were enhanced to display additional network identification information.
+
+Example startup output:
+
+```text
+Initializing SD card...
+SD card initialized.
+SSID: WiFi-IOT
+IP: 192.168.1.1
+Mac: 01:a6:b7:02:14:29
+```
+
+The MAC address was originally considered for use as a request header that could assist with device authentication.
+
+Subsequent network discussions suggested that this may be unnecessary because networking equipment already identifies devices by MAC address at Layer 2.
+
+Even if not used directly for authentication, including the MAC address in startup diagnostics provides several operational benefits:
+
+- Network troubleshooting
+- Verifying device identity
+- DHCP reservation setup
+- Router configuration
+- Distinguishing multiple WeatherMule deployments
+
+This became especially relevant after deployment planning for the dedicated IoT wireless network in Silver City.
+
+Future deployment procedures may include assigning static DHCP reservations based on the WeatherMule MAC address so that router reboots do not require an onsite visit to determine a new IP address.
+
+### Operational Principle
+
+A mule carrying weather packets should always know:
+
+```text
+Who it is
+Where it is
+What day its cargo belongs to
+```
+
+The MAC address answers the first question.
+
+The IP address answers the second.
+
+Daily packboxes answer the third.
+
 --- 
 
 ## Documentation TODO
