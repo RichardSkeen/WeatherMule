@@ -990,6 +990,65 @@ The IP address answers the second.
 
 Daily packboxes answer the third.
 
+## 2026-08-18 - The Case of the Missing Packbox
+
+![Missing Packbox](images/lost-packbox.png)
+
+During overnight testing of date-based packboxes, the WeatherMule
+successfully created 2026-08-18.box but failed to retain
+2026-08-17.box.
+
+A subsequent investigation found:
+
+- 2026-08-18.box present.
+- current.box present.
+- Whisky still present in current.box.
+- 2026-08-17.box missing.
+
+Initial blame was assigned to the mule.
+
+However, a reconstruction of the event revealed the wrangler
+attempting to avoid a flying 2026-08-17.box while the actual
+whisky source remained adjacent to current.box.
+
+Status: Investigation ongoing.
+
+Current Theory:
+The mule was framed.
+
+## The Case of the Missing Packbox - Final Resolution
+
+The WeatherMule was started between 8:00 PM and 9:00 PM PDT.
+
+At that time, Ambient's `dateutc` value had already rolled
+over to the next UTC day.
+
+Since filenames are derived from `dateutc`, the first packbox
+created was:
+
+    2026-08-18.box
+
+The expected:
+
+    2026-08-17.box
+
+was never actually created.
+
+The subsequent forced rollover test successfully produced both:
+
+    2026-08-18.box
+    2026-08-19.box
+
+confirming that packbox creation and retention were functioning
+correctly.
+
+Final Verdict:
+
+    Mule: Not Guilty
+    SD Card: Not Guilty
+    Filename Logic: Not Guilty
+    Wrangler: Confused by Zulu Time
+
 --- 
 
 ## Documentation TODO

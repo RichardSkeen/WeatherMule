@@ -328,3 +328,23 @@ Cute + Meaningful = Priceless.
 The mule does not care why the cargo was not delivered.
 
 The mule only cares whether the cargo was delivered.
+
+
+
+## Possible WeatherMule Enclosure
+
+The WeatherMule enclosure may be based on a modified 3D model of a pack mule. The mule body would be hollowed to contain the Nano 33 IoT, SD storage, wiring, and future expansion components. The saddle or tack assembly could serve as a removable service panel.
+
+Potential source model:
+![Mule 3D Model](images/generic-mule.jpg)
+[WeatherMule enclosure](https://www.myminifactory.com/object/3d-print-28-mm-generic-mule-tow-550193)
+
+Ideas:
+- Hollow body cavity for electronics.
+- Saddle removable for maintenance access.
+- OLED "Pack Tag" display mounted on a packbox.
+- RGB status LED visible from outside the enclosure.
+- USB access hidden beneath packbox or saddle.
+- Device physically embodies the WeatherMule concept by carrying observations in digital packboxes to the PackStation.
+
+Status: Future investigation. Verify model scale and available internal volume before purchase.
