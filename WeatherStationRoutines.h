@@ -1,14 +1,12 @@
 #pragma once
 
-#include "WeatherParam.h"
+#include "KeyValuePair.h"
 #include "WeatherRequest.h"
 #include "StorageRoutines.h"
 #include "ApiClientRoutines.h"
 #include "Hole.h"
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
-
-extern bool inDesignMode;
 
 //----------------------------------------------
 // Prototypes
@@ -38,13 +36,14 @@ void ProcessWeatherStationRequest(WiFiClient& client)
   
   WeatherRequest weatherRequest(request);
 
-  if(weatherRequest.isWeatherRequest){
-    
+  if(weatherRequest.isWeatherRequest)
+  {
 
-    if(AppendToBox(weatherRequest))
+    bool storedLocally = AppendToBox(weatherRequest);
+    bool uploaded = UploadApi(weatherRequest);
+
+    if(storedLocally || uploaded)
     {
-        //UploadWeatherStationRequest(weatherRequest);
-
         Send200(client);
     }
     else
@@ -52,10 +51,28 @@ void ProcessWeatherStationRequest(WiFiClient& client)
         Send500(client);
     }
 
+    LogInformation();
+    LogInformation("Delivery status");
 
-    if(inDesignMode){
-      LogInformation(weatherRequest);
+    if (!storedLocally)
+    {
+        LogInformation("Packbox unavailable");
     }
+    else
+    {
+        LogInformation("loaded in Packbox");
+    }
+
+    if (!uploaded)
+    {
+        LogInformation("Unload endpoint unavailable");
+    }
+    else 
+    {
+        LogInformation("Uploaded to api");
+    }
+
+    LogInformation(weatherRequest);
   }
   else if(request.indexOf("/logging/on") > -1){
     inDesignMode = true;

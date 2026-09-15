@@ -32,7 +32,7 @@ Located Arduino code from a much earlier attempt at receiving weather station da
 The old project contained:
 
 - WeatherRequest.h
-- WeatherParam.h
+- KeyValuePair.h
 
 The code was already capable of:
 

@@ -1,12 +1,17 @@
 #pragma once
+
 #include "WeatherRequest.h"
-#include "WeatherParam.h"
+#include "KeyValuePair.h"
+
+extern bool inDesignMode;
 
 //----------------------------------------------
 // Prototypes
 //---------------------------------------------- 
 void LogInformation();
+void LogInformation(bool force);
 void LogInformation(const String& logThis);
+void LogInformation(const String& logThis, bool force);
 void LogInformation(WeatherRequest& logWeatherRequest);
 String ToHexString(uint32_t value);
 
@@ -16,25 +21,44 @@ String ToHexString(uint32_t value);
 
 void LogInformation()
 {
-  Serial.println();
+  LogInformation(false);
+}
+
+void LogInformation(bool force)
+{
+  if(inDesignMode || force)
+  {
+    Serial.println();
+  }
 }
 
 void LogInformation(const String& logThis)
 {
-  Serial.println(logThis);
+  LogInformation(logThis, false);
+}
+
+void LogInformation(const String& logThis, bool force)
+{
+  if(inDesignMode || force)
+  {
+    Serial.println(logThis);
+  }
 }
 
 void LogInformation(WeatherRequest& logWeatherRequest)
 {
-  Serial.println(logWeatherRequest.httpRequest);
+  if(inDesignMode)
+  {
+    Serial.println(logWeatherRequest.httpRequest);
 
-  for (const WeatherParam& param : logWeatherRequest.Parameters) {
-    Serial.print(param.Name);
-    Serial.print(": ");
-    Serial.println(param.Value);
+    for (const KeyValuePair& param : logWeatherRequest.Properties) {
+      Serial.print(param.Name);
+      Serial.print(": ");
+      Serial.println(param.Value);
+    }
+
+    Serial.println();
   }
-
-  Serial.println();
 }
 
 String ToHexString(uint32_t value)

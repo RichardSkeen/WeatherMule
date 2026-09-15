@@ -1,9 +1,8 @@
 #include <vector>
-//#include "WeatherParam.h"
-//#include "WeatherRequest.h"
 #include "weathermule-secrets.h"
 #include "WeatherStationRoutines.h"
 #include "StorageRoutines.h"
+#include "HoleRoutines.h"
 #include "Hole.h"
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
@@ -39,19 +38,19 @@ void setup() {
 
   delay(5000);
 
-  LogInformation("SSID: " + String(WiFi.SSID()));
+  LogInformation("SSID: " + String(WiFi.SSID()), true);
 
   IPAddress ip = WiFi.localIP();
-  LogInformation("IP: " + ip.toString());
+  LogInformation("IP: " + ip.toString(), true);
 
   byte mac[6];
   WiFi.macAddress(mac);
-  LogInformation("Mac: "+ MacToString(mac));
+  LogInformation("Mac: "+ MacToString(mac), true);
 
   delay(500);
 
-  LogInformation();
-  LogInformation();
+  LogInformation(true);
+  LogInformation(true);
 }
 
 void loop() {
@@ -69,10 +68,10 @@ void loop() {
       loopCount++;
   }
   else if(holeCount > 0){
-    //ProcessHoles();
+    ProcessHoles();
   }
 
-  delay(1000);
+  //delay(500);
 }
 
 

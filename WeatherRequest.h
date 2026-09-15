@@ -1,27 +1,31 @@
 #pragma once
+
 #include <Arduino.h>
 #include <vector>
-#include "WeatherParam.h"
+#include "KeyValuePair.h"
+
 
 class WeatherRequest {
 public:
+    const String Date_Utc = "dateutc";
+
     String httpMethod;
     String httpVersion;
     String httpRequest;
     bool isWeatherRequest;
 
-    std::vector<WeatherParam> Parameters;
+    std::vector<KeyValuePair> Properties;
 
     // Constructor: receives full request, parses and fills fields
     WeatherRequest(const String& request) {
         httpRequest = request;
         String paramString = parseRequest(request);
-        Parameters = toVector(paramString);
+        Properties = toVector(paramString);
     }
 
     String GetParamValue(const String& name) const
     {
-        for (const auto& param : Parameters)
+        for (const auto& param : Properties)
         {
             if (param.Name == name)
             {
@@ -30,6 +34,37 @@ public:
         }
 
         return "";
+    }
+
+    String ToJson() const
+    {
+        String returnJson = "[";
+
+        bool first = true;
+
+        for (const auto& param : Properties)
+        {
+            if (!first)
+            {
+                returnJson += ",";
+            }
+
+            returnJson += param.ToJson();
+            first = false;
+        }
+
+        returnJson += "]";
+
+        return returnJson;
+    }
+
+    String GetDateString()
+    {
+        String ambientDateString = GetParamValue(Date_Utc);
+
+        ambientDateString.replace('+', 'T');
+
+        return ambientDateString;
     }
 
 private:
@@ -45,7 +80,7 @@ private:
 
         isWeatherRequest = request.indexOf("data/report/") > -1;
 
-        // Parameters: after first '&' and before " HTTP/"
+        // Properties: after first '&' and before " HTTP/"
         int paramStart = request.indexOf('&');
         int paramEnd = request.indexOf(" HTTP/", paramStart);
         String params = (paramStart > 0 && paramEnd > paramStart)
@@ -55,19 +90,19 @@ private:
         return params;
     }
 
-    // Parses key=value pairs into WeatherParam vector
-    std::vector<WeatherParam> toVector(const String& parameters) {
-        std::vector<WeatherParam> result;
+    // Parses key=value pairs into KeyValuePair vector
+    std::vector<KeyValuePair> toVector(const String& Properties) {
+        std::vector<KeyValuePair> result;
         int start = 0;
-        while (start < parameters.length()) {
-            int end = parameters.indexOf('&', start);
-            if (end == -1) end = parameters.length();
-            String pair = parameters.substring(start, end);
+        while (start < Properties.length()) {
+            int end = Properties.indexOf('&', start);
+            if (end == -1) end = Properties.length();
+            String pair = Properties.substring(start, end);
             int eqIdx = pair.indexOf('=');
             if (eqIdx > 0) {
                 String name = pair.substring(0, eqIdx);
                 String value = pair.substring(eqIdx + 1);
-                result.push_back(WeatherParam(name, value));
+                result.push_back(KeyValuePair(name, value));
             }
             start = end + 1;
         }

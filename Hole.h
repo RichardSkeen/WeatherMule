@@ -8,19 +8,21 @@ public:
     String VendorDeviceKey;
     String FromUtc;
     String ToUtc;
+    bool PartiallyFilled;
+    uint32_t ByteOffset;
 
     Hole()
-        : VendorDeviceKey(""), FromUtc(""), ToUtc("")
+        : VendorDeviceKey(""), FromUtc(""), ToUtc(""), PartiallyFilled(false), ByteOffset(0)
     {
     }
 
     Hole(const String& vendorDeviceKey, const String& fromUtc, const String& toUtc)
-        : VendorDeviceKey(vendorDeviceKey), FromUtc(fromUtc), ToUtc(toUtc)
+        : VendorDeviceKey(vendorDeviceKey), FromUtc(fromUtc), ToUtc(toUtc), PartiallyFilled(false), ByteOffset(0)
     {
     }
 
     Hole(const String& jsonHole)
-        : VendorDeviceKey(""), FromUtc(""), ToUtc("")
+        : VendorDeviceKey(""), FromUtc(""), ToUtc(""), PartiallyFilled(false), ByteOffset(0)
     {
         VendorDeviceKey = ExtractJsonValue(jsonHole, "vendorDeviceKey");
         FromUtc         = ExtractJsonValue(jsonHole, "fromUtc");
@@ -37,7 +39,12 @@ public:
         return FromUtc.substring(0, 10) + ".box";
     }
 
-    
+    String ToJson() const
+    {
+        return "{\"vendorDeviceKey\":\"" + VendorDeviceKey +
+            "\",\"fromUtc\":\"" + FromUtc +
+            "\",\"toUtc\":\"" + ToUtc + "\"}";
+    }
 
     private:
 

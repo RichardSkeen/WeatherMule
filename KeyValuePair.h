@@ -1,19 +1,19 @@
 #pragma once
 #include <Arduino.h>
 
-class WeatherParam
+class KeyValuePair
 {
 public:
 
     String Name;
     String Value;
 
-    WeatherParam()
+    KeyValuePair()
         : Name(""), Value("")
     {
     }
 
-    WeatherParam(const String& name, const String& value)
+    KeyValuePair(const String& name, const String& value)
         : Name(name), Value(value)
     {
     }
