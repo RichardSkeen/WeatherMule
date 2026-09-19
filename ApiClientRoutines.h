@@ -328,6 +328,9 @@ bool FillHoleApi(WeatherRequest weatherRequest)
 {
     String responseBody;
 
+    LogInformation("Filling-----");
+    LogInformation(weatherRequest.ToJson());
+
     return PostApi(
         Url_Fill,
         weatherRequest.ToJson(),
@@ -337,6 +340,8 @@ bool FillHoleApi(WeatherRequest weatherRequest)
 bool NotObservedApi(Hole* hole)
 {
     String responseBody;
+
+    LogInformation("NO: " + hole->ToJson());
 
     return PostApi(
         Url_NotObserved,

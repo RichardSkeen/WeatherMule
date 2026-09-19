@@ -68,11 +68,12 @@ void ProcessHoles()
   LogInformation("\t" + foundObservation);
   LogInformation();
 
-  if(foundObservation == ReadUntil_NotFound)
+  if(foundObservation == ReadUntil_NotFound && hole->PartiallyFilled)
   {
-    LogInformation("not observed");
-    LogInformation();
-
+    RemoveHole(hole);
+  }
+  else if(foundObservation == ReadUntil_NotFound)
+  {
     if(NotObservedApi(hole))
     {
       RemoveHole(hole);

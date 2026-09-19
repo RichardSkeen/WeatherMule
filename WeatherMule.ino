@@ -19,7 +19,7 @@ bool designModeChanged = false;
 void setup() {
   Serial.begin(9600);
 
-  inDesignMode = false;
+  inDesignMode = true;
 
   LogInformation("Connecting to WiFi...");
   
