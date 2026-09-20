@@ -30,7 +30,15 @@ For readers new to the project, follow the documents below in order. Each docume
 
 The project stories describe how WeatherMule evolved, why design decisions were made, and lessons learned during development.
 
-- Why WeatherMule Exists
+1. [silver-city-use-case.md](project-story/silver-city-use-case.md)  
+   Describes the initial use case that motivated the WeatherMule project.
+
+2. [weather-station-data.md](project-story/weather-station-data.md)  
+   Explains how the Ambient Weather protocol was discovered and validated.  
+
+3. [packbox-storage.md](project-story/packbox-storage.md)  
+   Describes the design and implementation of the PackBox storage system.
+
 - Project Evolution
 - Engineering Incidents
 - Development Culture
@@ -39,8 +47,10 @@ The project stories describe how WeatherMule evolved, why design decisions were 
 
 Hardware-specific documentation is located in the hardware/ folder.
 
-- [arduino.md](hardware/arduino.md)
-- [enclosure.md](hardware/enclosure.md)
+
+1. [ambient-weather-2000.md](hardware/ambient-weather-2000.md)  
+2. [arduino.md](hardware/arduino.md)
+3. [enclosure.md](hardware/enclosure.md)
 
 ## Reference Material
 
