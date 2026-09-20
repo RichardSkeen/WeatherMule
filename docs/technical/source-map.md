@@ -59,7 +59,7 @@
 - Version.h
   - Stores application version information
 
-- weathermule-secrets.h
+- weathermule-secrets.example
   - WiFi configuration
   - API host configuration
   - API authentication keys
