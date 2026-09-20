@@ -10,7 +10,7 @@ That place is Silver City, California.
 
 The weather station that inspired WeatherMule can be viewed here:
 
-[Silver City Weather Station](https://ambientweather.net/dashboard/7e3f5598bc3b9789186fff20dac521d)
+[Silver City Weather Station](https://ambientweather.net/share/4XV3OU)
 
 Elevation: 6,900 feet.
 
