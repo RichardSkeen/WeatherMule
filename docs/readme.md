@@ -36,7 +36,10 @@ The project stories describe how WeatherMule evolved, why design decisions were 
 2. [weather-station-data.md](project-story/weather-station-data.md)  
    Explains how the Ambient Weather protocol was discovered and validated.  
 
-3. [packbox-storage.md](project-story/packbox-storage.md)  
+3. [pack-station-weather.md](project-story/pack-station-weather.md)  
+   Describes how the PackStation weather station was integrated into WeatherMule.
+
+4. [packbox-storage.md](project-story/packbox-storage.md)  
    Describes the design and implementation of the PackBox storage system.
 
 - Project Evolution

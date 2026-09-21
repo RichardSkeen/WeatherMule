@@ -69,6 +69,8 @@ public:
 };
 ```
 
+*Implementation: [KeyValuePair.h](../../KeyValuePair.h)*
+
 ## Why Vectors Were Chosen
 
 A traditional Arduino C++ array would have required WeatherMule to decide in advance how many parameters a request could contain:
@@ -99,7 +101,8 @@ The collection grew to match the observation that actually arrived.
 
 The vector solved the problem of storing an unknown number of parameters, but another design question remained: where should the raw request, parsed parameters, and operations performed on them live?
 
-The answer became `WeatherRequest.h`.
+The answer became the WeatherRequest.  
+*Implementation: [WeatherRequest.h](../../WeatherRequest.h)*
 
 A complete line received from the weather station could be passed directly into the class constructor:
 

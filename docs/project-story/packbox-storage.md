@@ -8,6 +8,42 @@ The original plan was simple:
 - Store them on an SD card.
 - Forward them later when connectivity returned.
 
+### Loading the Packboxes
+*Implementation: [StorageRoutines.h](../../StorageRoutines.h)*
+
+The SD card was not intended to be a temporary cache or a backup used only when the network was unavailable. It was part of the normal path followed by every weather observation.
+
+When WeatherMule received an observation from the weather station, it preserved the original HTTP request as a complete line of text. That line was appended to a file on the SD card before the mule moved on to the next observation.
+
+The observation timestamp determined which file received the record. WeatherMule extracted the date from the timestamp and used it to create a daily packbox filename:
+
+2026-08-15.box
+
+Every observation received on that date was appended to the same file. When the date changed, WeatherMule began loading observations into a new packbox.
+
+The result was a simple storage arrangement:
+
+2026-08-15.box  
+2026-08-16.box  
+2026-08-17.box  
+
+Each packbox contained the original observation requests in the order they were received, with one observation stored on each line. WeatherMule did not rewrite the observation into a new storage format or discard fields it did not recognize. The original cargo was placed into the packbox exactly as it arrived.
+
+After writing an observation, WeatherMule flushed the data and closed the file. This protected observations from being stranded in memory and ensured that accepted weather cargo was actually resting in a packbox.
+
+Local storage and network delivery were separate tasks. WeatherMule attempted both.
+
+- If the upload succeeded, the weather server had the observation.
+- If local storage succeeded, the mule still had the observation.
+- If both succeeded, the observation existed in two places.
+- Only if both failed was the observation considered lost.
+
+This made the SD card more than removable storage. It became the mule's durable memory.
+
+The design required no database, index, or predefined record structure. It needed only an SD card, one packbox per day, and a mule stubborn enough to write down every observation before forgetting it.
+
+The storage plan seemed simple.
+
 The difficulty began when the wrangler went searching through the Official Drawer of Unused Technology.
 
 After excavating several generations of cables, adapters, mystery circuit boards, and devices whose original purpose had been forgotten, the only SD card that could be found was a 128 GB SDXC card formatted as exFAT.
