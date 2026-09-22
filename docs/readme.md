@@ -6,27 +6,34 @@ For readers new to the project, follow the documents below in order. Each docume
 
 ## [Technical Documentation](technical/)
 
-1. [quick-start.md](technical/quick-start.md)
-
+1. [quick-start.md](technical/quick-start.md)  
    Begin here. Provides a high-level introduction to WeatherMule and the quickest path to understanding the project.
 
-2. [work-flow.md](technical/work-flow.md)
-
-   Explains how observations move through the system, from weather station reception to storage, delivery, authentication, recovery, and hole processing.
-
-3. [architecture.md](technical/architecture.md)
-
+2. [architecture.md](technical/architecture.md)  
    Describes the major components of WeatherMule and the responsibilities assigned to each subsystem.
 
-4. [source-map.md](technical/source-map.md)
+3. [flow-application.md](technical/flow-application.md)  
+   Describes the flow of data through the WeatherMule application, from weather station to storage and delivery.
 
+4. [flow-weather-request.md](technical/flow-weather-request.md)  
+   Describes the flow of a weather station request through the WeatherMule application, from request to response.
+
+5. [flow-authentication.md](technical/flow-authentication.md)  
+   Describes the flow of an authentication request through the WeatherMule application, from request to response.
+
+6. [flow-upload-observation.md](technical/flow-upload-observation.md)  
+   Describes the flow of an observation upload through the WeatherMule application, from request to response.
+
+7. [flow-hole-processing.md](technical/flow-hole-processing.md)  
+   Describes the flow of a hole processing request through the WeatherMule application, from request to response.
+
+8. [source-map.md](technical/source-map.md)  
    Maps source files to responsibilities. Use this document when locating where specific functionality is implemented.
 
-5. [protocol-discovery.md](technical/protocol-discovery.md)
-
+9. [protocol-discovery.md](technical/protocol-discovery.md)  
    Documents how the Ambient Weather protocol was analyzed, validated, and incorporated into WeatherMule.
 
-## Project Story
+## [Project Story](project-story/)
 
 The project stories describe how WeatherMule evolved, why design decisions were made, and lessons learned during development.
 
