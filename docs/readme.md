@@ -12,26 +12,26 @@ For readers new to the project, follow the documents below in order. Each docume
 2. [architecture.md](technical/architecture.md)  
    Describes the major components of WeatherMule and the responsibilities assigned to each subsystem.
 
-3. [flow-application.md](technical/flow-application.md)  
+3. [flow-storage.md](technical/flow-storage.md)  
+   Describes the flow of data through the WeatherMule storage subsystem, from request to response.
+
+4. [flow-application.md](technical/flow-application.md)  
    Describes the flow of data through the WeatherMule application, from weather station to storage and delivery.
 
-4. [flow-weather-request.md](technical/flow-weather-request.md)  
+5. [flow-weather-request.md](technical/flow-weather-request.md)  
    Describes the flow of a weather station request through the WeatherMule application, from request to response.
 
-5. [flow-authentication.md](technical/flow-authentication.md)  
+6. [flow-authentication.md](technical/flow-authentication.md)  
    Describes the flow of an authentication request through the WeatherMule application, from request to response.
 
-6. [flow-upload-observation.md](technical/flow-upload-observation.md)  
+7. [flow-upload-observation.md](technical/flow-upload-observation.md)  
    Describes the flow of an observation upload through the WeatherMule application, from request to response.
 
-7. [flow-hole-processing.md](technical/flow-hole-processing.md)  
+8. [flow-hole-processing.md](technical/flow-hole-processing.md)  
    Describes the flow of a hole processing request through the WeatherMule application, from request to response.
 
-8. [source-map.md](technical/source-map.md)  
+9. [source-map.md](technical/source-map.md)  
    Maps source files to responsibilities. Use this document when locating where specific functionality is implemented.
-
-9. [protocol-discovery.md](technical/protocol-discovery.md)  
-   Documents how the Ambient Weather protocol was analyzed, validated, and incorporated into WeatherMule.
 
 ## [Project Story](project-story/)
 
@@ -75,3 +75,6 @@ Reference documents contain vendor-specific information and supporting research 
 
 1. [ambient-device-data-specs.md](reference/ambient-device-data-specs.md)  
    Reference documentation from Ambient Weather describing the weather station observation fields.
+
+2. [protocol-discovery.md](reference/protocol-discovery.md)  
+   Documents how the Ambient Weather protocol was analyzed, validated, and incorporated into WeatherMule.
