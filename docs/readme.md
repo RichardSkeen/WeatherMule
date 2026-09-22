@@ -78,3 +78,13 @@ Reference documents contain vendor-specific information and supporting research 
 
 2. [protocol-discovery.md](reference/protocol-discovery.md)  
    Documents how the Ambient Weather protocol was analyzed, validated, and incorporated into WeatherMule.
+
+---
+
+## Related Project
+
+### PackStationWeather
+
+The destination at the end of the trail.
+
+📖 [Building Our Own Pack Station](project-story/pack-station-weather.md)

@@ -60,3 +60,12 @@ The difference matters when the interesting weather arrives at the same time the
 
 ### [Documentation Index](docs/readme.md)
 
+---
+
+## Related Project
+
+### PackStationWeather
+
+The destination at the end of the trail.
+
+📖 [Building Our Own Pack Station](docs/project-story/pack-station-weather.md)

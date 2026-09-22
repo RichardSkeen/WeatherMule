@@ -393,7 +393,7 @@ WeatherMule uses a pack-train metaphor to provide consistent terminology through
 | Cargo | Weather observations |
 | Packbox | A daily `.box` file containing stored observations |
 | Mule Train | The complete collection of packboxes |
-| PackStationWeather | The server responsible for observation storage, authentication, and hole identification |
+| [PackStationWeather](../pack-station-weather.md) | The server responsible for observation storage, authentication, and hole identification |
 | Hole | A range of observations expected by PackStationWeather but not currently available in its observation history |
 | Check-In | Authentication request used to obtain Session and Refresh tokens |
 | Delivery | Successful upload of an observation to PackStationWeather |

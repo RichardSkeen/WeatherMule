@@ -187,3 +187,43 @@ It became part of a complete system.
 The mule no longer needed to sneak cargo through somebody else's gate.
 
 It finally had a pack station of its own.
+
+## An Unexpected Construction Project
+
+One small detail remained.
+
+PackStationWeather did not exist.
+
+When WeatherMule began, the plan was simply to build a reliable store-and-forward relay for weather observations. The destination was expected to be somebody else's system.
+
+PackStationWeather was never part of the original roadmap.
+
+It emerged in the middle of development after the historical synchronization problem became impossible to ignore.
+
+The realization that WeatherMule needed a destination designed for delayed delivery created an entirely new project.
+
+Unfortunately, creating a new weather service takes considerably longer than naming one.
+
+While WeatherMule continued to mature, PackStationWeather started from scratch.
+
+Authentication needed to be designed.
+
+Observation storage needed to be built.
+
+Hole detection needed to be implemented.
+
+APIs needed to be written.
+
+Reports, dashboards, station management, and user interfaces still lay ahead.
+
+By the time WeatherMule was approaching its first public release, the pack station itself looked more like a construction site than a finished destination.
+
+The mule already knew where it was going.
+
+The station crews were still raising the walls.
+
+One thing was immediately clear.
+
+Pi still needed an office.
+
+![under-construction](images/under-construction.png)
