@@ -33,23 +33,30 @@ The project stories describe how WeatherMule evolved, why design decisions were 
 1. [silver-city-use-case.md](project-story/silver-city-use-case.md)  
    Describes the initial use case that motivated the WeatherMule project.
 
-2. [weather-station-data.md](project-story/weather-station-data.md)  
+2. [life-of-a-weather-observation.md](project-story/life-of-a-weather-observation.md)  
+   Explains how a weather observation moves through the system, from creation to storage and delivery.
+
+3. [weather-station-data.md](project-story/weather-station-data.md)  
    Explains how the Ambient Weather protocol was discovered and validated.  
 
-3. [pack-station-weather.md](project-story/pack-station-weather.md)  
+4. [pack-station-weather.md](project-story/pack-station-weather.md)  
    Describes how the PackStation weather station was integrated into WeatherMule.
 
-4. [packbox-storage.md](project-story/packbox-storage.md)  
+5. [packbox-storage.md](project-story/packbox-storage.md)  
    Describes the design and implementation of the PackBox storage system.
 
-- Project Evolution
-- Engineering Incidents
-- Development Culture
+6. [authentication.md](project-story/authentication.md)  
+   Explains how authentication was implemented in WeatherMule.
+
+7. [unload-weather.md](project-story/unload-weather.md)  
+   Explains how the mule unloads weather observations to the pack station.
+
+8. [holes.md](project-story/holes.md)  
+   Explains how holes in the weather observation data are detected and processed.
 
 ## Hardware
 
 Hardware-specific documentation is located in the hardware/ folder.
-
 
 1. [ambient-weather-2000.md](hardware/ambient-weather-2000.md)  
 2. [arduino.md](hardware/arduino.md)
@@ -59,6 +66,5 @@ Hardware-specific documentation is located in the hardware/ folder.
 
 Reference documents contain vendor-specific information and supporting research used throughout the project.
 
-1. [ambient-device-data-specs.md](reference/ambient-device-data-specs.md)
-
-   Reference documentation describing the weather station observation fields used throughout the project. This document is shared by both the technical documentation and project stories.
+1. [ambient-device-data-specs.md](reference/ambient-device-data-specs.md)  
+   Reference documentation from Ambient Weather describing the weather station observation fields.

@@ -16,9 +16,9 @@ The primary WeatherMule deployment operates from an off-grid cabin powered by so
 
 Unlike equipment installed in a climate-controlled office or data center, systems operating here must tolerate real-world mountain conditions. Snow accumulates around buildings, power availability depends on weather and battery reserves, and equipment may operate unattended for extended periods of time.
 
-If something fails, a technician is not minutes away.
+If something fails, a technician is not minutes away.  
 
-The solution often involves a mountain drive, a shovel, and whatever tools happen to be available when you arrive.
+The solution often involves a mountain drive. In winter, that drive ends with a 4 to 6 mile trip by skis or snowshoes.
 
 ![Silver City Cabin](images/silver-city-cabin.png)
 
@@ -38,7 +38,7 @@ Most software assumes connectivity is available all the time.
 
 Mountain weather does not care about those assumptions.
 
-### Why WeatherMule Exists
+## Why WeatherMule Exists
 
 The Silver City weather station continues collecting observations whether the internet is available or not.
 
@@ -56,4 +56,19 @@ WeatherMule was created to ensure that weather data survives long enough to be d
 
 The guiding principle is simple:
 
-**Save the weather first. Figure everything else out later.**
+> **Save the weather first. Figure everything else out later.**
+
+### Why a Mule?
+
+That still leaves one question: why a mule?
+
+In the mountains, a mule is trusted because it keeps moving when conditions become difficult. It is sure-footed, reliable, stubborn when it needs to be, and capable of carrying important cargo across terrain where other methods fail.
+
+That is exactly what WeatherMule was built to do.
+
+When the network is down, the weather station keeps working. When connectivity disappears, the data is stored safely and carried forward until a route becomes available. The goal is not speed or elegance. The goal is making sure the observations arrive.
+
+We needed a reliable, doggedly stubborn beast of burden to shepherd weather data across outages, interruptions, and mountain weather. A system willing to wait patiently when the trail disappears and keep moving when it reopens.
+
+The obvious choice was a mule.
+

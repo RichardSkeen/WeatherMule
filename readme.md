@@ -4,7 +4,7 @@
 ```cpp
 if (!Interested)
 {
-    Read("docs/readme.md");
+    Read("docs/readme.md").JumpTo(start => "Technical Documentation" || "docs/technical/");
 }
 else
 {
@@ -57,3 +57,6 @@ The difference matters when the interesting weather arrives at the same time the
 ---
 
 **WeatherMule:** Off-grid. Low-power. Store-and-forward. Snow-aware. Mule-approved.
+
+### [Documentation Index](docs/readme.md)
+
