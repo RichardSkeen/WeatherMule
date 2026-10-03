@@ -8,6 +8,22 @@ The observation is safe.
 
 Now the mule attempts delivery.
 
+### An Impassable Trail
+
+Sometimes the mule never reaches the pack station.
+
+A storm may close the trail. A bridge may wash out. Heavy snow may make the pass impassable. The pack station may sit beyond a canyon where no message can get through.
+
+In those situations, there is no paperwork to examine and no gatekeeper to argue with. The mule never arrives at the station.
+
+The cargo remains safely packed in the mule train's packboxes. Nothing is discarded. Nothing is forgotten.
+
+The mule simply waits.
+
+Eventually the weather changes, the trail opens, and the journey can continue. When that day comes, the cargo is still there exactly as it was when the trail disappeared.
+
+![Impassable Trail](images/impassable-trail.png)
+
 ### The Hitching Rail
 
 *Implementation: [ApiClientRoutines.h](../../ApiClientRoutines.h) [ApiResponse.h](../../ApiResponse.h)* 
