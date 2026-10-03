@@ -35,6 +35,10 @@ The hole processing subsystem provides the mechanism that allows WeatherMule to 
 - Hole progress is stored inside the Hole object.
 - The storage subsystem provides replay operations.
 - WeatherMule may abandon current hole progress when a new upload returns a new hole list.
+- Active holes are transient work orders and may be discarded.
+- A newly uploaded observation replaces any existing hole list.
+- Transport failures during hole recovery may cause WeatherMule to discard active holes.
+- PackStationWeather remains the authority for determining which holes exist.
 
 ### Understanding a Hole
 
@@ -58,6 +62,11 @@ This means WeatherMule does not need to calculate where recovery begins or ends.
 
 The hole already provides both boundaries.
 
+active holes being discarded
+
+PackStationWeather will provide a fresh hole list
+after the next successful upload
+
 ---
 
 ## Workflow
@@ -74,6 +83,20 @@ After a successful observation upload:
 4. WeatherMule replaces its current hole list.
 
 The returned holes become WeatherMule's current recovery workload.
+
+### Hole Lifetime
+
+Holes are temporary recovery instructions rather than source data.
+
+Active holes may be discarded when:
+
+- A successful observation upload returns a new hole list.
+- Transport failures prevent WeatherMule from continuing recovery operations.
+- The device restarts.
+
+Discarding holes does not result in observation loss because packboxes remain the source of truth.
+
+When communication is restored and a new observation is successfully uploaded, PackStationWeather reevaluates observation history and returns a fresh set of holes if/when recovery work still exists.
 
 ### Hole Selection
 

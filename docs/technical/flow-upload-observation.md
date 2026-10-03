@@ -208,7 +208,7 @@ Responsibilities:
 
 This is the function called by the weather request subsystem.
 
-#### PostApi()
+#### HttpRequest()
 
 Performs all HTTP POST communication.
 

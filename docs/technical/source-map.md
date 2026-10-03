@@ -108,6 +108,18 @@ The `FromUtc` and `ToUtc` fields identify observations already known to PackStat
 
 *Implementation: [Hole.h](../../Hole.h)*
 
+#### HttpClienus.h
+
+- Performs HTTP communication
+- Creates outbound HTTP requests
+- Reads HTTP responses
+- Supports multi-packet responses
+- Parses HTTP status lines
+- Detects transport failures
+- Applies receive timeouts
+- Closes network connections
+- Returns HttpResponsum objects
+
 ### ApiResponse.h
 
 - Extracts JSON from PackStationWeather responses

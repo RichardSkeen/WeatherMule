@@ -189,20 +189,21 @@ Responsibilities:
 
 Called only when authentication is required.
 
-#### PostApi()
+##### HttpRequest()
 
-Primary API communication routine.
+Primary HTTP communication routine.
 
 Responsibilities:
-
-- Ensure authentication exists.
 - Establish API connection.
-- Build request headers.
-- Submit requests.
-- Detect authentication failures.
-- Retry failed requests after re-authentication.
+- Build HTTP requests.
+- Read HTTP responses.
+- Read multi-packet response bodies.
+- Apply response timeouts.
+- Return HTTP status information.
+- Close connections.
 
-All upload operations ultimately pass through this function.
+Implementation: HttpClienus.h
+
 
 #### BuildHeaderAuth()
 
