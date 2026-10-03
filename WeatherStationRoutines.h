@@ -38,18 +38,11 @@ void ProcessWeatherStationRequest(WiFiClient& client)
 
   if(weatherRequest.isWeatherRequest)
   {
+    Send200(client);
+    client.stop();
 
     bool storedLocally = AppendToBox(weatherRequest);
     bool uploaded = UploadApi(weatherRequest);
-
-    if(storedLocally || uploaded)
-    {
-        Send200(client);
-    }
-    else
-    {
-        Send500(client);
-    }
 
     LogInformation();
     LogInformation("Delivery status");
@@ -82,8 +75,10 @@ void ProcessWeatherStationRequest(WiFiClient& client)
     inDesignMode = false;
     SendDesignModeResponse(client, inDesignMode);
   }
-  else{
-    Send404(client);
+  else 
+  {
+    Send200(client);
+    client.stop();
   }
 
 }
@@ -129,7 +124,7 @@ void Send404(WiFiClient& client)
 }
 
 void SendDesignModeResponse(WiFiClient& client, bool designMode){
-  SendStatusResponse(client, 200, "OK");
+  Send200(client);
 
   client.println("<!DOCTYPE html>");
   client.println("<html>");
@@ -140,4 +135,6 @@ void SendDesignModeResponse(WiFiClient& client, bool designMode){
   client.println("<p>Design Mode:" + String(designMode == true ? "true" : "false") + "</p>");
   client.println("</body>");
   client.println("</html>");
+
+  client.stop();
 }

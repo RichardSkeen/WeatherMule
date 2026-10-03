@@ -10,9 +10,9 @@
 #include "ApiResponse.h"
 #include "SerialMonitorRoutines.h"
 #include "Hole.h"
-#include <WiFiNINA.h>
-#include <WiFiUdp.h>
+#include "HttpClienus.h"
 
+const String Url_CheckIn = "/api/checkin";
 const String Url_Upload = "/api/unload";
 const String Url_Fill = "/api/unload/hole/fill";
 const String Url_NotObserved = "/api/unload/hole/not/observed";
@@ -38,124 +38,18 @@ bool UploadApi(WeatherRequest weatherRequest);
 bool FillHoleApi(WeatherRequest weatherRequest);
 bool NotObservedApi(Hole* hole);
 
-String BuildHeaderAuth(
-    const String& token);
-
-String BuildUserAgent();
+String UserAgentString();
 
 //----------------------------------------------
 // Implementation below here
 //---------------------------------------------- 
-bool PostApi(const String& url, const String& jsonPayload, String& responseBody)
-{
-    responseBody = "";
-
-    if(tokenSession.length() == 0)
-    {
-        if(!CheckInApi())
-        {
-            return false;
-        }
-    }
-
-    WiFiClient apiClient;
-
-    //Open Connection
-    if (!apiClient.connect(
-            PackStationWeather_Host,
-            PackStationWeather_Port))
-    {
-        LogInformation("PostApi: connection failed");
-
-        return false;
-    }
-
-    //Post
-    apiClient.print("POST ");
-    apiClient.print(url);
-    apiClient.println(" HTTP/1.1");
-    apiClient.println("Host: " PackStationWeather_Host);
-    apiClient.println(BuildHeaderAuth(tokenSession));
-    apiClient.println(BuildUserAgent());
-    apiClient.println("Connection: close");
-    
-    //add payload if there is one
-    if(jsonPayload.length() > 0)
-    {
-        apiClient.println("Content-Type: application/json");
-        apiClient.println(
-            "Content-Length: " +
-            String(jsonPayload.length())
-        );
-        apiClient.println();
-        apiClient.println(jsonPayload);
-    }
-    else{
-        apiClient.println();
-    }
-
-    String statusLine = apiClient.readStringUntil('\n');
-
-    LogInformation(statusLine);
-    LogInformation("");
-
-    if (statusLine.indexOf("401") >= 0)
-    {
-        authAttempts++;
-
-        if(authAttempts > max_AuthAttempts)
-        {
-            return false;
-        }
-
-        if(!CheckInApi())
-        {
-            return false;
-        }
-
-        return PostApi(url, jsonPayload, responseBody);
-    }
-
-    //--------------------------------------
-    // Skip headers
-    //--------------------------------------
-
-    while (apiClient.connected())
-    {
-        String line = apiClient.readStringUntil('\n');
-
-        LogInformation(line);
-
-        if (line == "\r")
-        {
-            break;
-        }
-    }
-
-    LogInformation();
-    //--------------------------------------
-    // Read JSON body
-    //--------------------------------------
-
-    while (apiClient.available())
-    {
-        responseBody += (char)apiClient.read();
-    }
-
-    LogInformation("Response Body");
-    LogInformation(responseBody);
-    LogInformation();
-
-    apiClient.stop();
-
-    return true;
-}
 
 bool CheckInApi()
 {
+    HttpResponsum response;
     String useToken = tokenRefresh;
 
-    if(authAttempts > max_AuthAttempts)
+    if(authAttempts >= max_AuthAttempts)
     {
         LogInformation("Max authentication attempts exceeded: " + String(max_AuthAttempts));
 
@@ -165,122 +59,67 @@ bool CheckInApi()
     // First boot or refresh token expired
     if (useToken.length() == 0)
     {
-        useToken = PackStationWeather_API_KEY;
+        LogInformation("Using API Token (" + String(authAttempts) + ")");
 
-        LogInformation("Using API Token");
+        useToken = PackStationWeather_API_KEY;
     }
     else {
-        LogInformation("Using Refresh Token");
+        LogInformation("Using Refresh Token (" + String(authAttempts) + ")");
     }
 
     LogInformation("");
 
-    WiFiClient apiClient;
+    response = HttpRequest(PackStationWeather_Host, PackStationWeather_Port, "GET", Url_CheckIn, useToken, UserAgentString(), "");
 
-    if (!apiClient.connect(
-            PackStationWeather_Host,
-            PackStationWeather_Port))
+    authAttempts++;
+
+    if(response.Succeeded != true || (response.StatusCode != 200 && response.StatusCode != 401))
     {
-        LogInformation("CheckInApi: connection failed");
+        //Http request failed not Auth related.
+        LogInformation(response.StatusLine, response.ErrorMessage);
+
+        return false;
+    }
+    else if(response.StatusCode == 401 && useToken == PackStationWeather_API_KEY)
+    {
+        //API key revoked
+        authAttempts = max_AuthAttempts + 1;
+
+        LogInformation("Api Key revoked");
+        LogInformation();
+
+        return false;
+    }
+    else if(response.StatusCode == 401)
+    {
+        //refresh token expired or revoked
+        tokenRefresh = "";
+
+        LogInformation("Refresh Token expired or revoked.");
+        LogInformation();
+
+        return CheckInApi();
+    }
+
+    // reponse.StatusCode = 200
+
+    ApiResponse apiResponse(response.Body);
+
+    if (apiResponse.IsValid != true)
+    {
+        LogInformation("CheckInApi: invalid JSON response");
 
         return false;
     }
 
-    apiClient.println("GET /api/checkin HTTP/1.1");
-    apiClient.println("Host: " PackStationWeather_Host);
-    apiClient.println(BuildHeaderAuth(useToken));
-    apiClient.println(BuildUserAgent());
-    apiClient.println("Connection: close");
-    apiClient.println();
+    tokenSession = apiResponse.GetValue(0, "sessionToken");
 
-    //--------------------------------------
-    // Read status line
-    //--------------------------------------
+    tokenRefresh = apiResponse.GetValue(0, "refreshToken");
 
-    String statusLine = apiClient.readStringUntil('\n');
-
-    LogInformation(statusLine);
-    LogInformation("");
-
-    if (statusLine.indexOf("401") >= 0)
+    if (tokenSession.length() == 0 || tokenRefresh.length() == 0)
     {
-        // refresh token rejected
-        if (useToken != PackStationWeather_API_KEY)
-        {
-            apiClient.stop();
-
-            LogInformation("trying API Key");
-
-            tokenRefresh = "";
-            return CheckInApi(); // retry with API key
-        }
-
-        LogInformation("CheckInApi: unauthorized");
-
-        authAttempts++;
-
-        return false;
-    }
-
-    //--------------------------------------
-    // Skip headers
-    //--------------------------------------
-
-    while (apiClient.connected())
-    {
-        String line = apiClient.readStringUntil('\n');
-
-        LogInformation(line);
-
-        if (line == "\r")
-        {
-            break;
-        }
-    }
-
-    LogInformation("");
-    //--------------------------------------
-    // Read JSON body
-    //--------------------------------------
-
-    String responseBody = "";
-
-    while (apiClient.available())
-    {
-        responseBody += (char)apiClient.read();
-    }
-
-    LogInformation("Response Body");
-    LogInformation(responseBody);
-    LogInformation("");
-
-    apiClient.stop();
-
-    ApiResponse response(responseBody);
-
-    if (!response.IsValid)
-    {
-        LogInformation(
-            "CheckInApi: invalid JSON response");
-
-        return false;
-    }
-
-    tokenSession =
-        response.GetValue(
-            0,
-            "sessionToken");
-
-    tokenRefresh =
-        response.GetValue(
-            0,
-            "refreshToken");
-
-    if (tokenSession.length() == 0 ||
-        tokenRefresh.length() == 0)
-    {
-        LogInformation(
-            "CheckInApi: token response incomplete");
+        LogInformation("CheckInApi: token response incomplete");
+        LogInformation();
 
         tokenSession = "";
         tokenRefresh = "";
@@ -289,6 +128,7 @@ bool CheckInApi()
     }
 
     LogInformation("CheckInApi: tokens received");
+    LogInformation();
 
     authAttempts = 0;
 
@@ -299,66 +139,112 @@ bool CheckInApi()
 bool UploadApi(WeatherRequest weatherRequest)
 {
     ClearHoles();
+    authAttempts = 0;
 
-    String responseBody = "";
+    HttpResponsum response = HttpRequest(PackStationWeather_Host, PackStationWeather_Port, "POST", Url_Upload, tokenSession, UserAgentString(), weatherRequest.ToJson());
 
-    bool postStatus = PostApi(Url_Upload, weatherRequest.ToJson(), responseBody);
-
-    if(!postStatus)
+    if(response.Succeeded != true || (response.StatusCode != 200 && response.StatusCode != 401))
     {
-        return false;
-    }
-
-    ApiResponse response(responseBody);
-
-    if (!response.IsValid)
-    {
-        LogInformation(
-            "UploadApi: invalid JSON response");
+        LogInformation(response.StatusLine, response.ErrorMessage);
 
         return false;
     }
+    else if(response.StatusCode == 401)
+    {
+        LogInformation("Authentication failed check in");
 
-    AddHoles(response);
+        if(CheckInApi() != true)
+        {
+            LogInformation("Check in failed.");
+
+            return false;
+        }
+
+        return UploadApi(weatherRequest);
+    }
+
+    ApiResponse apiResponse(response.Body);
+
+    if (apiResponse.IsValid != true)
+    {
+        LogInformation("UploadApi: invalid JSON response");
+
+        return false;
+    }
+
+    AddHoles(apiResponse);
 
     return true;
 }
 
 bool FillHoleApi(WeatherRequest weatherRequest)
 {
-    String responseBody;
-
     LogInformation("Filling-----");
     LogInformation(weatherRequest.ToJson());
 
-    return PostApi(
-        Url_Fill,
-        weatherRequest.ToJson(),
-        responseBody);
+    HttpResponsum response = HttpRequest(PackStationWeather_Host, PackStationWeather_Port, "POST", Url_Fill, tokenSession, UserAgentString(), weatherRequest.ToJson());
+
+    if(response.Succeeded != true || (response.StatusCode != 200 && response.StatusCode != 401))
+    {
+        LogInformation(response.StatusLine, response.ErrorMessage);
+
+        LogInformation("Issues clearing holes");
+
+        ClearHoles();
+
+        return false;
+    }
+    else if(response.StatusCode == 401)
+    {
+        LogInformation("Authentication failed check in");
+
+        if(CheckInApi() != true)
+        {
+            LogInformation("Check in failed.");
+
+            return false;
+        }
+
+        return FillHoleApi(weatherRequest);
+    }
+
+    return true;
 }
 
 bool NotObservedApi(Hole* hole)
 {
-    String responseBody;
+     LogInformation("NO: " + hole->ToJson());
 
-    LogInformation("NO: " + hole->ToJson());
+    HttpResponsum response = HttpRequest(PackStationWeather_Host, PackStationWeather_Port, "POST", Url_NotObserved, tokenSession, UserAgentString(), hole->ToJson());
 
-    return PostApi(
-        Url_NotObserved,
-        hole->ToJson(),
-        responseBody);
+    if(response.Succeeded != true || (response.StatusCode != 200 && response.StatusCode != 401))
+    {
+        LogInformation(response.StatusLine, response.ErrorMessage);
+
+        LogInformation("Issues clearing holes");
+        ClearHoles();
+
+        return false;
+    }
+    else if(response.StatusCode == 401)
+    {
+        LogInformation("Authentication failed check in");
+
+        if(CheckInApi() != true)
+        {
+            LogInformation("Check in failed.");
+
+            return false;
+        }
+
+        return NotObservedApi(hole);
+    }
+
+    return true;
 }
 
-String BuildHeaderAuth(const String& token)
+String UserAgentString()
 {
-    return "Authorization: Bearer " + token;
+    return "WeatherMule/" +  String(WeatherMule_Name) + " (" + String(WeatherMule_Version) + ")";
 }
 
-String BuildUserAgent()
-{
-    return "User-Agent: WeatherMule/" +
-           String(WeatherMule_Name) +
-           " (" +
-           String(WeatherMule_Version) +
-           ")";
-}

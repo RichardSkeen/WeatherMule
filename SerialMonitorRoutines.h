@@ -12,6 +12,8 @@ void LogInformation();
 void LogInformation(bool force);
 void LogInformation(const String& logThis);
 void LogInformation(const String& logThis, bool force);
+void LogInformation(const String& statusLine, const String& errorMessage);
+void LogInformation(const String& statusLine, const String& errorMessage, bool force);
 void LogInformation(WeatherRequest& logWeatherRequest);
 String ToHexString(uint32_t value);
 
@@ -42,6 +44,31 @@ void LogInformation(const String& logThis, bool force)
   if(inDesignMode || force)
   {
     Serial.println(logThis);
+  }
+}
+
+void LogInformation(const String& statusLine, const String& errorMessage)
+{
+  LogInformation(statusLine, errorMessage, false);
+}
+
+void LogInformation(const String& statusLine, const String& errorMessage, bool force)
+{
+  if(inDesignMode || force)
+  {
+    Serial.println("Http request failed");
+
+    if(statusLine.length() > 0)
+    {
+        Serial.println(statusLine);
+    }
+
+    if(errorMessage.length() > 0)
+    {
+        Serial.println(errorMessage);
+    }
+
+    Serial.println();
   }
 }
 

@@ -63,8 +63,6 @@ void loop() {
 
       delay(500);
 
-      incomingWebRequest.stop();
-
       loopCount++;
   }
   else if(holeCount > 0){
