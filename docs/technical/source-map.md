@@ -120,6 +120,8 @@ The `FromUtc` and `ToUtc` fields identify observations already known to PackStat
 - Closes network connections
 - Returns HttpResponsum objects
 
+*Implementation: [HttpClienus.h](../../HttpClienus.h)*
+
 ### ApiResponse.h
 
 - Extracts JSON from PackStationWeather responses
