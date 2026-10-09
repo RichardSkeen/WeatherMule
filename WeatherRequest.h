@@ -61,8 +61,13 @@ public:
     String GetDateString()
     {
         String ambientDateString = GetParamValue(Date_Utc);
-
+        
         ambientDateString.replace('+', 'T');
+
+        if(!ambientDateString.endsWith("Z"))
+        {
+            ambientDateString += "Z";
+        }
 
         return ambientDateString;
     }

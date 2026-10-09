@@ -60,6 +60,10 @@ The project stories describe how WeatherMule evolved, why design decisions were 
 
 8. [holes.md](project-story/holes.md)  
    Explains how holes in the weather observation data are detected and processed.
+## Future Development
+#### V2
+1.[v2-weather-station-manifest-design.md](future/v2/v2-weather-station-manifest-design.md)  
+  Weather station manifest and configuration management.
 
 ## Hardware
 
