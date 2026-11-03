@@ -11,6 +11,8 @@
 const String Vendor_Device_Key = "vendorDeviceKey";
 const String From_Utc = "fromUtc";
 const String To_Utc = "toUtc";
+const String From_Date_Raw = "fromDateRaw";
+const String To_Date_Raw = "toDateRaw";
 const int max_Holes = 10;
 
 Hole Holes[max_Holes];
@@ -42,9 +44,12 @@ void AddHoles(const ApiResponse& apiResponse)
         }
 
         Holes[holeCount] = Hole(
-            apiResponse.GetValue(i, Vendor_Device_Key),
-            apiResponse.GetValue(i, From_Utc),
-            apiResponse.GetValue(i, To_Utc));
+          apiResponse.GetValue(i, Vendor_Device_Key),
+          apiResponse.GetValue(i, From_Utc),
+          apiResponse.GetValue(i, To_Utc),
+          apiResponse.GetValue(i, From_Date_Raw),
+          apiResponse.GetValue(i, To_Date_Raw)
+        );
 
         holeCount++;
     }

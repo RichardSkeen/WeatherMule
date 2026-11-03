@@ -1,32 +1,76 @@
 #pragma once
+
 #include <Arduino.h>
 
 class Hole
 {
 public:
-
     String VendorDeviceKey;
+
     String FromUtc;
     String ToUtc;
+
+    String FromDateRaw;
+    String ToDateRaw;
+
     bool PartiallyFilled;
     uint32_t ByteOffset;
 
     Hole()
-        : VendorDeviceKey(""), FromUtc(""), ToUtc(""), PartiallyFilled(false), ByteOffset(0)
+        : VendorDeviceKey(""),
+          FromUtc(""),
+          ToUtc(""),
+          FromDateRaw(""),
+          ToDateRaw(""),
+          PartiallyFilled(false),
+          ByteOffset(0)
     {
     }
 
-    Hole(const String& vendorDeviceKey, const String& fromUtc, const String& toUtc)
-        : VendorDeviceKey(vendorDeviceKey), FromUtc(fromUtc), ToUtc(toUtc), PartiallyFilled(false), ByteOffset(0)
+    Hole(
+        const String& vendorDeviceKey,
+        const String& fromUtc,
+        const String& toUtc,
+        const String& fromDateRaw,
+        const String& toDateRaw)
+        : VendorDeviceKey(vendorDeviceKey),
+          FromUtc(fromUtc),
+          ToUtc(toUtc),
+          FromDateRaw(fromDateRaw),
+          ToDateRaw(toDateRaw),
+          PartiallyFilled(false),
+          ByteOffset(0)
     {
     }
 
     Hole(const String& jsonHole)
-        : VendorDeviceKey(""), FromUtc(""), ToUtc(""), PartiallyFilled(false), ByteOffset(0)
+        : VendorDeviceKey(""),
+          FromUtc(""),
+          ToUtc(""),
+          FromDateRaw(""),
+          ToDateRaw(""),
+          PartiallyFilled(false),
+          ByteOffset(0)
     {
-        VendorDeviceKey = ExtractJsonValue(jsonHole, "vendorDeviceKey");
-        FromUtc         = ExtractJsonValue(jsonHole, "fromUtc");
-        ToUtc           = ExtractJsonValue(jsonHole, "toUtc");
+        VendorDeviceKey = ExtractJsonValue(
+            jsonHole,
+            "vendorDeviceKey");
+
+        FromUtc = ExtractJsonValue(
+            jsonHole,
+            "fromUtc");
+
+        ToUtc = ExtractJsonValue(
+            jsonHole,
+            "toUtc");
+
+        FromDateRaw = ExtractJsonValue(
+            jsonHole,
+            "fromDateRaw");
+
+        ToDateRaw = ExtractJsonValue(
+            jsonHole,
+            "toDateRaw");
     }
 
     String ToPackBoxName() const
@@ -43,12 +87,15 @@ public:
     {
         return "{\"vendorDeviceKey\":\"" + VendorDeviceKey +
             "\",\"fromUtc\":\"" + FromUtc +
-            "\",\"toUtc\":\"" + ToUtc + "\"}";
+            "\",\"toUtc\":\"" + ToUtc +
+            "\",\"fromDateRaw\":\"" + FromDateRaw +
+            "\",\"toDateRaw\":\"" + ToDateRaw + "\"}";
     }
 
-    private:
-
-    static String ExtractJsonValue(const String& json, const String& key)
+private:
+    static String ExtractJsonValue(
+        const String& json,
+        const String& key)
     {
         String search = "\"" + key + "\":\"";
 
