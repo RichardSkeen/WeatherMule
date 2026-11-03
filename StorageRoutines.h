@@ -189,13 +189,13 @@ String OpenPackboxRead(Hole& fillHole)
 
 String ReadUntil(Hole& fillHole, FsFile& readFile)
 {
-    LogInformation("\tReadUntil-------------------------");
     LogInformation(
         "\t\t-Hole: " + fillHole.VendorDeviceKey +
-        "  from: " + fillHole.FromUtc +
-        "    to: " + fillHole.ToUtc);
+        "  fromRaw: " + fillHole.FromDateRaw +
+        "    toRaw: " + fillHole.ToDateRaw
+    );
 
-    // Fast path: return directly to the current FromUtc observation.
+    // Fast path: return directly to the current FromDateRaw observation.
     if (fillHole.PartiallyFilled)
     {
         if (!readFile.seekSet(fillHole.ByteOffset))
@@ -215,29 +215,31 @@ String ReadUntil(Hole& fillHole, FsFile& readFile)
 
         String line = readFile.readStringUntil('\n');
         WeatherRequest weatherRequest(line);
+        String useDateRaw = weatherRequest.GetParamValue(weatherRequest.Date_Utc);
         String useDateUtc = weatherRequest.GetDateString();
 
         if (foundBookmark)
         {
             // Do not send the observation at the far side of the hole.
-            if (useDateUtc >= fillHole.ToUtc)
+            if (useDateRaw >= fillHole.ToDateRaw)
             {
                 return ReadUntil_NotFound; // Better renamed HoleComplete.
             }
 
-            // This line becomes the new FromUtc bookmark.
+            // This observation becomes the new hole-start bookmark.
             fillHole.FromUtc = useDateUtc;
+            fillHole.FromDateRaw = useDateRaw;
             fillHole.ByteOffset = lineStartOffset;
             fillHole.PartiallyFilled = true;
 
             return line;
         }
 
-        if (useDateUtc == fillHole.FromUtc)
+        if (useDateRaw == fillHole.FromDateRaw)
         {
             LogInformation(
-                "\t\t-Line's date matches FromUtc: " +
-                useDateUtc);
+                "\t\t-Line's date matches FromDateRaw: " +
+                useDateRaw);
 
             foundBookmark = true;
         }
@@ -246,7 +248,7 @@ String ReadUntil(Hole& fillHole, FsFile& readFile)
             // The optimization was stale or invalid.
             // Do not continue from an unverified location.
             LogInformation(
-                "\t\t-ByteOffset does not match FromUtc.");
+                "\t\t-ByteOffset does not match FromDateRaw.");
 
             return ReadUntil_NotFound;
         }

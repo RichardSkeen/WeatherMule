@@ -1,6 +1,6 @@
 #pragma once
 
-#define WeatherMule_Version "0.1.1"
+#define WeatherMule_Version "0.1.2"
 
 //----------------------------------------------
 // Prototypes

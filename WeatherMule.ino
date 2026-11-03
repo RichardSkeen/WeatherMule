@@ -19,9 +19,15 @@ bool designModeChanged = false;
 void setup() {
   Serial.begin(9600);
 
-  inDesignMode = true;
+  while (!Serial)
+  {
+      ; // Wait for Serial Monitor
+  }
 
-  LogInformation("Connecting to WiFi...");
+  inDesignMode = true;
+  
+  LogInformation("Version: " + String(WeatherMule_Version), true);
+  Serial.print("Connecting to WiFi...");
   
   while(WiFi.begin(SECRET_SSID, SECRET_PASS) != WL_CONNECTED)
   {
@@ -30,6 +36,8 @@ void setup() {
     delay(1000);
   }
 
+  LogInformation();
+  
   delay(1000);
 
   server.begin();

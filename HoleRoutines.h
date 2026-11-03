@@ -95,7 +95,8 @@ void ProcessHoles()
     {
       if(FillHoleApi(holeWeatherRequest))
       {
-        hole->FromUtc = holeWeatherRequest.GetDateString();
+          hole->FromUtc = holeWeatherRequest.GetDateString();
+          hole->FromDateRaw = holeWeatherRequest.GetParamValue(holeWeatherRequest.Date_Utc);
       }
     }
   }
