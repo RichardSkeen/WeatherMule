@@ -161,25 +161,38 @@ String OpenPackboxRead(Hole& fillHole)
     if(result == ReadUntil_NextFile)
     {
         String nextBox = NextBoxFileName(packboxFileName);
-
         if(nextBox == "")
         {
-            return "";
+            return ReadUntil_NotFound;
         }
 
         FsFile nextFile = sd.open(nextBox, O_RDONLY);
 
         if(!nextFile)
         {
-            return "";
+            return ReadUntil_NotFound;
         }
 
-        String firstLine =
-            nextFile.readStringUntil('\n');
+        String firstLine = nextFile.readStringUntil('\n');
 
         nextFile.close();
 
+        WeatherRequest weatherRequest(firstLine);
+
+        String useDateRaw = weatherRequest.GetParamValue(weatherRequest.Date_Utc);
+
+        // The first observation in the next Packbox must actually
+        // be inside the hole. ToDateRaw itself is the far endpoint
+        // and must never be returned as a hole-fill observation.
+        if(useDateRaw >= fillHole.ToDateRaw)
+        {
+            return ReadUntil_NotFound;
+        }
+
+        fillHole.FromUtc = weatherRequest.GetDateString();
+        fillHole.FromDateRaw = useDateRaw;
         fillHole.ByteOffset = 0;
+        fillHole.PartiallyFilled = true;
 
         return firstLine;
     }

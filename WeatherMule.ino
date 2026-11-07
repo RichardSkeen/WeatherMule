@@ -4,80 +4,82 @@
 #include "StorageRoutines.h"
 #include "HoleRoutines.h"
 #include "Hole.h"
+#include "WiFiRoutines.h"
 #include <WiFiNINA.h>
 #include <WiFiUdp.h>
 
 bool inDesignMode;
 int loopCount = 0;
 
-WiFiServer server(80);
+WiFiServer weatherStationServer(80);
 
 bool giveFeedback = false;
 bool designModeChanged = false;
 
 
-void setup() {
-  Serial.begin(9600);
+void setup()
+{
+    Serial.begin(9600);
 
-  while (!Serial)
-  {
-      ; // Wait for Serial Monitor
-  }
+    while (!Serial)
+    {
+        ; // Wait for Serial Monitor
+    }
 
-  inDesignMode = true;
-  
-  LogInformation("Version: " + String(WeatherMule_Version), true);
-  Serial.print("Connecting to WiFi...");
-  
-  while(WiFi.begin(SECRET_SSID, SECRET_PASS) != WL_CONNECTED)
-  {
-    Serial.print(".");
+    inDesignMode = true;
 
-    delay(1000);
-  }
+    LogInformation(
+        "Version: " + String(WeatherMule_Version),
+        true);
 
-  LogInformation();
-  
-  delay(1000);
+    //
+    // Initialize storage independently of WiFi.
+    //
+    sdAvailable = InitializeStorage();
 
-  server.begin();
+    //
+    // MaintainWiFi performs the initial connection attempt.
+    // If WiFi is unavailable it will retry every five minutes.
+    //
+    MaintainWiFi();
 
-  sdAvailable = InitializeStorage();
+    delay(500);
 
-  delay(5000);
+    byte mac[6];
+    WiFi.macAddress(mac);
 
-  LogInformation("SSID: " + String(WiFi.SSID()), true);
+    LogInformation(
+        "Mac: " + MacToString(mac),
+        true);
 
-  IPAddress ip = WiFi.localIP();
-  LogInformation("IP: " + ip.toString(), true);
-
-  byte mac[6];
-  WiFi.macAddress(mac);
-  LogInformation("Mac: "+ MacToString(mac), true);
-
-  delay(500);
-
-  LogInformation(true);
-  LogInformation(true);
+    LogInformation(true);
+    LogInformation(true);
 }
 
-void loop() {
+void loop()
+{
+    MaintainWiFi();
 
-  WiFiClient incomingWebRequest = server.available();
+    if(!WiFiAvailable())
+    {
+        return;
+    }
 
-  if(incomingWebRequest)
-  { 
-      ProcessWeatherStationRequest(incomingWebRequest);
+    WiFiClient incomingWebRequest =
+        weatherStationServer.available();
 
-      delay(500);
+    if(incomingWebRequest)
+    {
+        ProcessWeatherStationRequest(
+            incomingWebRequest);
 
-      loopCount++;
-  }
-  else if(holeCount > 0){
-    ProcessHoles();
-  }
-
-  //delay(500);
+        delay(500);
+        loopCount++;
+    }
+    else if(holeCount > 0)
+    {
+        ProcessHoles();
+    }
 }
 
 

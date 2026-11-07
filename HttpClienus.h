@@ -529,7 +529,7 @@ inline bool ReadHttpBody(WiFiClient& client, String& body, long contentLength, b
 
     //------------------------------------------
     // No Content-Length:
-    // read until the server closes connection
+    // read until the weatherStationServer closes connection
     //------------------------------------------
 
     unsigned long lastDataAt = millis();
