@@ -4,40 +4,56 @@
 
 WeatherMule is organized around a small number of focused subsystems. Each major source file owns a specific part of the application's behavior.
 
-- Application flow is implemented by `WeatherMule.ino`.
-- Weather request handling is implemented by `WeatherStationRoutines.h`.
-- Observation parsing and representation are implemented by `WeatherRequest.h`.
-- Storage and replay are implemented by `StorageRoutines.h`.
-- Authentication and API communication are implemented by `ApiClientRoutines.h`.
-- Hole recovery is implemented by `HoleRoutines.h`.
+- Application flow is implemented by WeatherMule.ino.
+- WiFi connection and weather station server lifecycle are implemented by WiFiRoutines.h.
+- Weather request handling is implemented by WeatherStationRoutines.h.
+- Observation parsing and representation are implemented by WeatherRequest.h.
+- Storage and replay are implemented by StorageRoutines.h.
+- Authentication and PackStationWeather API communication are implemented by ApiClientRoutines.h.
+- Hole recovery is implemented by HoleRoutines.h.
 
 The files below describe the primary responsibilities of each source file.
 
 ## Source Files
 
-### WeatherMule.ino.h
+### WeatherMule.ino
 
 - Application entry point
 - Performs startup
-- Connects to WiFi
-- Starts the local HTTP server
 - Initializes SD storage
+- Initiates WiFi maintenance
+- Defines the weather station HTTP server
 - Runs the main processing loop
+- Gates network-dependent processing on WiFi availability
 - Prioritizes incoming observations over hole processing
 
-*Implementation: [WeatherMule.ino](../../WeatherMule.ino)*
+_Implementation: [WeatherMule.ino](../../WeatherMule.ino)_
+
+### WiFiRoutines.h
+
+- Monitors WiFi connection state
+- Performs the initial WiFi connection attempt
+- Attempts immediate reconnection when WiFi loss is detected
+- Retries failed WiFi connections at five-minute intervals
+- Starts the weather station server when WiFi becomes available
+- Stops the weather station server when WiFi is lost
+- Maintains WiFi and weather station server lifecycle state
+
+_Implementation: [WiFiRoutines.h](../../WiFiRoutines.h)_
 
 ### WeatherStationRoutines.h
 
-- Receives HTTP requests
+- Receives weather station HTTP requests
 - Classifies request types
-- Creates `WeatherRequest` objects
-- Coordinates storage operations
-- Coordinates upload operations
+- Creates WeatherRequest objects
+- Acknowledges weather observations
+- Closes the weather station connection before downstream processing
+- Coordinates Packbox storage
+- Coordinates PackStationWeather upload
 - Handles logging control requests
-- Returns HTTP responses
+- Provides HTTP response helpers
 
-*Implementation: [WeatherStationRoutines.h](../../WeatherStationRoutines.h)*
+_Implementation: [WeatherStationRoutines.h](../../WeatherStationRoutines.h)_
 
 ### WeatherRequest.h
 
@@ -48,67 +64,78 @@ The files below describe the primary responsibilities of each source file.
 - Extracts name/value parameters
 - Provides access to observation values
 - Serializes observations for API communication
-- Normalizes observation timestamps
+- Provides access to raw `dateutc` values
+- Produces normalized UTC timestamps when required
 
-*Implementation: [WeatherRequest.h](../../WeatherRequest.h)*
+_Implementation: [WeatherRequest.h](../../WeatherRequest.h)_
 
 ### StorageRoutines.h
 
 - Initializes SD card storage
 - Manages Packboxes
 - Creates daily Packbox filenames
-- Appends original observations
+- Appends original weather station requests
 - Locates historical observations
+- Matches observations using raw `dateutc` values
 - Replays stored observations
 - Traverses Packboxes chronologically
-- Maintains replay bookmarks
+- Continues recovery across Packbox boundaries
+- Uses byte offsets to optimize replay searches
+- Validates optimized positions against raw timestamps
 - Supports hole recovery
 
-*Implementation: [StorageRoutines.h](../../StorageRoutines.h)*
+_Implementation: [StorageRoutines.h](../../StorageRoutines.h)_
 
 ### ApiClientRoutines.h
 
-- Performs on-demand authentication
+- Performs PackStationWeather API operations
 - Maintains Session Tokens
 - Maintains Refresh Tokens
+- Performs check-in authentication
+- Recovers authentication after `401 Unauthorized`
+- Falls back from Refresh Token authentication to the API key
 - Builds authenticated API requests
 - Uploads current observations
 - Uploads recovered observations
 - Reports Not Observed conditions
 - Reads PackStationWeather responses
-- Retrieves holes returned by PackStationWeather
-- Retries requests after authentication failures
+- Processes holes returned by PackStationWeather
+- Retries API operations after successful authentication recovery
 
-*Implementation: [ApiClientRoutines.h](../../ApiClientRoutines.h)*
+_Implementation: [ApiClientRoutines.h](../../ApiClientRoutines.h)_
 
 ### HoleRoutines.h
 
 - Maintains the active hole collection
 - Adds holes returned by PackStationWeather
+- Stores normalized and raw hole boundaries
 - Selects the oldest hole
 - Coordinates replay operations
-- Advances hole recovery progress
+- Advances normalized and raw recovery boundaries
 - Reports holes containing no recorded observations
 - Removes completed holes
 - Clears and replaces the active hole list
 
-*Implementation: [HoleRoutines.h](../../HoleRoutines.h)*
+_Implementation: [HoleRoutines.h](../../HoleRoutines.h)_
 
 ### Hole.h
 
 - Represents a recovery work order
 - Stores the PackStationWeather device key
-- Stores known recovery boundaries
-- Stores recovery progress
-- Stores replay bookmark information
+- Stores normalized recovery boundaries in `FromUtc` and `ToUtc`
+- Stores Packbox-facing recovery boundaries in `FromDateRaw` and `ToDateRaw`
+- Stores partial-recovery state in `PartiallyFilled`
+- Stores the replay optimization position in `ByteOffset`
 - Determines the initial Packbox filename
-- Serializes hole information for API communication
+- Serializes hole information
 
-The `FromUtc` and `ToUtc` fields identify observations already known to PackStationWeather. Observations between those boundaries are the recovery candidates.
+`FromUtc` and `ToUtc` identify the normalized hole boundaries.
 
-*Implementation: [Hole.h](../../Hole.h)*
+FromDateRaw and ToDateRaw contain the corresponding raw dateutc values used to locate and compare observations in Packbox storage.
 
-#### HttpClienus.h
+_Implementation: [Hole.h](../../Hole.h)_
+
+### HttpClienus.h
 
 - Performs HTTP communication
 - Creates outbound HTTP requests
@@ -120,7 +147,7 @@ The `FromUtc` and `ToUtc` fields identify observations already known to PackStat
 - Closes network connections
 - Returns HttpResponsum objects
 
-*Implementation: [HttpClienus.h](../../HttpClienus.h)*
+_Implementation: [HttpClienus.h](../../HttpClienus.h)_
 
 ### ApiResponse.h
 
@@ -131,7 +158,7 @@ The `FromUtc` and `ToUtc` fields identify observations already known to PackStat
 - Stores parsed properties
 - Provides access to response values
 
-*Implementation: [ApiResponse.h](../../ApiResponse.h)*
+_Implementation: [ApiResponse.h](../../ApiResponse.h)_
 
 ### SerialMonitorRoutines.h
 
@@ -140,7 +167,7 @@ The `FromUtc` and `ToUtc` fields identify observations already known to PackStat
 - Logs parsed weather requests
 - Formats integer values as hexadecimal strings
 
-*Implementation: [SerialMonitorRoutines.h](../../SerialMonitorRoutines.h)*
+_Implementation: [SerialMonitorRoutines.h](../../SerialMonitorRoutines.h)_
 
 ### KeyValuePair.h
 
@@ -149,25 +176,30 @@ The `FromUtc` and `ToUtc` fields identify observations already known to PackStat
 - Stores parsed response properties
 - Serializes name/value pairs for API communication
 
-*Implementation: [KeyValuePair.h](../../KeyValuePair.h)*
+_Implementation: [KeyValuePair.h](../../KeyValuePair.h)_
 
 ### Version.h
 
 - Stores WeatherMule application version information
 - Provides the version used in the API User-Agent header
 
-*Implementation: [Version.h](../../Version.h)*
+_Implementation: [Version.h](../../Version.h)_
 
-### weathermule-secrets.example.h
+### weathermule-secrets.example
 
-- Provides the configuration template for device-specific secrets
+- Provides the configuration template for device-specific settings and secrets
 - Defines the WeatherMule device name
 - Defines WiFi credentials
-- Defines Ambient Weather credentials
 - Defines the PackStationWeather host and port
 - Defines the PackStationWeather API key
 - Defines PackStationWeather endpoint configuration values
 
-The example file must be copied and populated with deployment-specific values before use. Credentials must not be committed to source control.
+The example file must be copied to:
 
-*Implementation: [weathermule-secrets.example](../../weathermule-secrets.example)*
+    weathermule-secrets.h
+
+and populated with deployment-specific values before use.
+
+Credentials must not be committed to source control.
+
+_Implementation: ../../weathermule-secrets.example.h_

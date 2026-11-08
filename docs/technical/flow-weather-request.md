@@ -61,37 +61,32 @@ If the request does not contain the weather reporting path, WeatherMule evaluate
 ### Weather Observation Processing
 
 When a weather observation is detected:
-
-1. Create a WeatherRequest object.
-2. Parse all request parameters.
-3. Store the observation in a Packbox.
-4. Attempt upload to PackStationWeather.
-5. Return an HTTP response to the weather station.
-6. Log processing results.
+- Create a WeatherRequest object.
+- Parse all request parameters.
+- Return HTTP 200 to the weather station.
+- Close the weather station connection.
+- Store the observation in a Packbox.
+- Attempt upload to PackStationWeather.
+- Log processing results.
 
 ```mermaid
 flowchart TD
-
     A[HTTP Request Received]
     B[Create WeatherRequest]
-
     C{Weather Request?}
-
-    D[Store In Packbox]
-    E[Upload To PackStationWeather]
-
-    F[Send HTTP 200]
-
-    G[Handle Non Weather Request]
+    D[Send HTTP 200]
+    E[Close Connection]
+    F[Store In Packbox]
+    G[Upload To PackStationWeather]
+    H[Handle Non Weather Request]
 
     A --> B
     B --> C
-
     C -->|Yes| D
     D --> E
     E --> F
-
-    C -->|No| G
+    F --> G
+    C -->|No| H
 ```
 
 ### Observation Storage
@@ -117,15 +112,9 @@ The weather request subsystem only initiates the upload.
 
 ### Response Generation
 
-If either local storage or upload succeeds:
+Valid weather observations receive HTTP 200 before local storage and remote upload are attempted.
 
-- HTTP 200 is returned.
-
-If neither operation succeeds:
-
-- HTTP 500 is returned.
-
-This behavior allows observations to be accepted when at least one preservation mechanism remains available.
+The weather station connection is then closed so storage and PackStationWeather processing occur independently of the incoming connection.
 
 ### Non-Weather Requests
 
@@ -138,9 +127,7 @@ Current supported requests include:
 
 These requests control diagnostic logging.
 
-Unknown requests return:
-
-- HTTP 404 Not Found
+Other requests receive HTTP 200 and the connection is closed.
 
 ---
 
@@ -220,6 +207,7 @@ Responsibilities include:
 - Detecting weather observations.
 - Returning parameter values.
 - Producing JSON payloads.
+- Preserving raw parameter values.
 - Producing normalized timestamps.
 
 *Implementation: [WeatherRequest.h](../../WeatherRequest.h)*

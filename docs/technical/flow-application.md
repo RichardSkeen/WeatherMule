@@ -17,7 +17,8 @@ The application layer coordinates all WeatherMule activity.
 
 It acts as the scheduler and traffic controller for the device by:
 
-- Initializing hardware and network resources.
+- Initializing hardware and storage resources.
+- Maintaining network availability.
 - Accepting incoming weather station requests.
 - Delegating observation processing.
 - Delegating hole recovery processing.
@@ -30,6 +31,7 @@ Most business logic is implemented elsewhere. The application layer decides what
 - WeatherMule performs one primary task per loop iteration.
 - Live weather observations have priority over hole recovery.
 - Startup initialization happens only once.
+- Network availability is maintained continuously.
 - Processing logic is delegated to specialized subsystems.
 - The application loop remains simple and predictable.
 - Long-term state is stored outside the application loop whenever possible.
@@ -41,17 +43,24 @@ Most business logic is implemented elsewhere. The application layer decides what
 ### Startup
 
 When power is applied:
-
-1. Serial logging is initialized.
-2. WiFi connection is established.
-3. The local HTTP server starts listening.
-4. SD card storage is initialized.
-5. Device information is written to the serial log.
-6. The application enters the main processing loop.
+- Serial logging is initialized.
+- SD card storage is initialized.
+- WiFi availability is checked and connection is attempted.
+- The weather station server starts when WiFi is available.
+- Device information is written to the serial log.
+- The application enters the main processing loop.
 
 ### Main Loop
 
-The application continuously evaluates two possible workloads.
+The application maintains WiFi availability and evaluates two possible workloads.
+
+#### WiFi Maintenance
+
+Each loop iteration checks WiFi availability.
+
+If WiFi is unavailable:
+- Reconnection is managed by the WiFi subsystem.
+- Weather processing waits until connectivity is restored.
 
 #### Incoming Weather Observation
 
@@ -87,25 +96,29 @@ This prevents historical recovery operations from delaying delivery of newly arr
 flowchart TD
 
     A[Loop Start]
-
-    B{Incoming Weather Request?}
-    C[Process Weather Request]
-
-    D{Active Holes?}
-    E[Process Oldest Hole]
-
-    F[Wait For Next Iteration]
+    B[Maintain WiFi]
+    C{WiFi Available?}
+    D{Incoming Weather Request?}
+    E[Process Weather Request]
+    F{Active Holes?}
+    G[Process Oldest Hole]
+    H[Wait For Next Iteration]
 
     A --> B
-    B -->|Yes| C
-    B -->|No| D
+    B --> C
+
+    C -->|No| A
+    C -->|Yes| D
 
     D -->|Yes| E
     D -->|No| F
 
-    C --> A
+    F -->|Yes| G
+    F -->|No| H
+
     E --> A
-    F --> A
+    G --> A
+    H --> A
 ```
 
 ---
@@ -127,9 +140,8 @@ Responsible for one-time initialization.
 Major responsibilities:
 
 - Start serial communications.
-- Connect to WiFi.
-- Start HTTP server.
 - Initialize SD storage.
+- Perform the initial WiFi maintenance check.
 - Display startup diagnostics.
 
 #### loop()
@@ -137,11 +149,12 @@ Major responsibilities:
 The application's operational controller.
 
 Decision sequence:
-
-1. Check for incoming weather station requests.
-2. Process weather requests when present.
-3. Otherwise process active holes.
-4. Repeat indefinitely.
+- Maintain WiFi availability.
+- Wait for connectivity when WiFi is unavailable.
+- Check for incoming weather station requests.
+- Process weather requests when present.
+- Otherwise process active holes.
+- Repeat indefinitely.
 
 #### MacToString()
 
@@ -149,7 +162,7 @@ Helper routine that converts the device MAC address into a printable string for 
 
 ### Important Structures
 
-#### WiFiServer server
+#### WiFiServer weatherStationServer
 
 Local HTTP listener used to receive weather station requests.
 
@@ -170,6 +183,7 @@ The application coordinates several specialized subsystems:
 | Subsystem | Responsibility |
 |------------|----------------|
 | WeatherStationRoutines.h | Weather request processing |
+| WiFiRoutines.h | WiFi connectivity and weather station server management |
 | StorageRoutines.h | Packbox storage and retrieval |
 | HoleRoutines.h | Hole management and recovery |
 | ApiClientRoutines.h | PackStationWeather communication |

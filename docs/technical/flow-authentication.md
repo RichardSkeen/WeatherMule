@@ -45,38 +45,30 @@ The authentication subsystem manages the complete credential lifecycle, includin
 
 ### Authentication Trigger
 
-Authentication begins when an API operation requires a session token and none is currently available.
+Authentication begins when PackStationWeather rejects an API request with HTTP 401 Unauthorized.
 
-Typical operations include:
-
+Typical operations requiring authentication include:
 - Observation uploads.
 - Hole fill uploads.
 - Not observed notifications.
 
-Before sending a request, WeatherMule checks whether a session token exists.
-
 ```mermaid
 flowchart TD
-
-    A[API Request Requested]
-
-    B{Session Token Exists?}
-
-    C[Send API Request]
-
+    A[Send API Request]
+    B{401 Unauthorized?}
+    C[Continue Processing]
     D[Perform Check-In]
+    E[Retry API Request]
 
     A --> B
-
-    B -->|Yes| C
-    B -->|No| D
-
-    D --> C
+    B -->|No| C
+    B -->|Yes| D
+    D --> E
 ```
 
 ### Check-In
 
-When no session token exists:
+When check-in is required:
 
 1. Connect to PackStationWeather.
 2. Send a GET request to `/api/checkin`.
@@ -111,10 +103,8 @@ PackStationWeather may reject a request with:
 HTTP 401 Unauthorized
 
 When this occurs:
-
-1. Increment authentication attempt counter.
-2. Attempt a new check-in.
-3. Retry the original request.
+- Attempt a new check-in.
+- Retry the original request after successful authentication.
 
 ```mermaid
 flowchart TD
@@ -189,7 +179,7 @@ Responsibilities:
 
 Called only when authentication is required.
 
-##### HttpRequest()
+#### HttpRequest()
 
 Primary HTTP communication routine.
 
@@ -204,16 +194,7 @@ Responsibilities:
 
 Implementation: HttpClienus.h
 
-
-#### BuildHeaderAuth()
-
-Creates the HTTP Authorization header.
-
-Example:
-
-Authorization: Bearer <token>
-
-#### BuildUserAgent()
+#### UserAgentString()
 
 Creates the WeatherMule User-Agent string.
 

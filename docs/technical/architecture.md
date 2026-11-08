@@ -59,6 +59,18 @@ Primary file:
 
 - WeatherMule.ino
 
+## WiFi Subsystem
+
+The WiFi Subsystem manages network connectivity and the weather station server.
+
+Responsibilities:
+- Monitor WiFi connectivity.
+- Reconnect when connectivity is lost.
+- Start and stop the weather station server as connectivity changes.
+
+Primary file:
+- WiFiRoutines.h
+
 ## WeatherRequest
 
 WeatherRequest parses incoming weather station requests and exposes observation values as key/value pairs.
@@ -292,27 +304,18 @@ A hole represents a range of observations that PackStationWeather expects to exi
 
 Holes are identified by PackStationWeather and returned to WeatherMule during normal upload operations.
 
-## Hole Structure
+### Hole Structure
 
 A hole contains:
-
 - Vendor Device Key
 - From UTC
 - To UTC
+- From Date Raw
+- To Date Raw
 - Partially Filled (used only by WeatherMule to track progress)
 - Byte Offset (used only by WeatherMule to track progress)
 
-The time range defines the missing observations between FromUtc and ToUtc.
-
-Example:
-
-{
-    "vendorDeviceKey": "...",
-    "fromUtc": "2026-08-15T17:00:00Z",
-    "toUtc": "2026-08-15T18:00:00Z",
-    "partiallyFilled": false,
-    "byteOffset": 0
-}
+The UTC values define the missing range. The raw date values correspond to the original weather station timestamps stored in packboxes.
 
 Primary file:
 
@@ -326,7 +329,7 @@ Hole recovery is performed incrementally rather than as a single batch operation
 
 Progress is tracked so recovery can resume efficiently between processing cycles.
 
-Hole processing continues until the boundary identified by ToUtc is reached or until WeatherMule determines that additional observations are unavailable.
+Hole processing continues until the end of the hole is reached or until WeatherMule determines that additional observations are unavailable.
 
 Holes are transient recovery instructions rather than permanent state.
 

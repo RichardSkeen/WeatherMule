@@ -46,10 +46,14 @@ A hole contains:
 
 ```json
 {
-    "fromUtc": "2026-09-01T12:00:00",
-    "toUtc":   "2026-09-01T13:00:00"
+    "fromUtc": "2026-09-01T12:00:00Z",
+    "toUtc": "2026-09-01T13:00:00Z",
+    "fromDateRaw": "2026-09-01+12:00:00",
+    "toDateRaw": "2026-09-01+13:00:00"
 }
 ```
+
+The UTC values identify the hole range; the raw values are used to match observations stored in Packboxes.
 
 Important:
 
@@ -61,11 +65,6 @@ The potentially missing observations are the observations between those two time
 This means WeatherMule does not need to calculate where recovery begins or ends.
 
 The hole already provides both boundaries.
-
-active holes being discarded
-
-PackStationWeather will provide a fresh hole list
-after the next successful upload
 
 ---
 
@@ -108,45 +107,20 @@ When no incoming weather observation exists:
 
 This prevents hole recovery from delaying new weather observations.
 
-```mermaid
-flowchart TD
-
-    A[Main Loop]
-
-    B{Incoming Weather?}
-
-    C[Process Weather]
-
-    D{Active Holes?}
-
-    E[Process Oldest Hole]
-
-    F[Wait]
-
-    A --> B
-
-    B -->|Yes| C
-    B -->|No| D
-
-    D -->|Yes| E
-    D -->|No| F
-```
-
 ### Locating the Starting Observation
 
-The hole's `FromUtc` value identifies a known observation.
+The hole's FromDateRaw value identifies the known observation in Packbox storage.
 
 WeatherMule:
+- Opens the Packbox containing the hole.
+- Locates the observation matching FromDateRaw.
+- Advances to the next observation.
 
-1. Opens the Packbox containing that observation.
-2. Locates the observation matching `FromUtc`.
-3. Advances to the next observation.
-
-The observation matching `FromUtc` is never uploaded again because PackStationWeather already possesses it.
+The boundary observation is not uploaded again because PackStationWeather already possesses it.
 
 ### Recovery Candidate Selection
 
-After the `FromUtc` observation is located:
+After the `FromDateRaw` observation is located:
 
 1. Advance to the next observation in storage.
 2. Evaluate its timestamp.
@@ -155,10 +129,9 @@ Two outcomes are possible.
 
 #### Observation Falls Within The Hole
 
-If:
-
 ```text
-candidate.dateutc < hole.ToUtc
+If:
+candidate.dateutc < hole.ToDateRaw
 ```
 
 the observation lies inside the hole.
@@ -193,7 +166,9 @@ The hole becomes:
 
 ```text
 FromUtc         = 12:05
+FromDateRaw     = 12:05
 ToUtc           = 13:00
+ToDateRaw       = 13:00
 PartiallyFilled = true
 ```
 
@@ -205,9 +180,9 @@ Every successfully replayed observation advances the hole forward.
 
 WeatherMule does not maintain a separate recovery ledger.
 
-Progress is represented entirely by:
-
+Progress is represented by:
 - FromUtc
+- FromDateRaw
 - ByteOffset
 - PartiallyFilled
 
@@ -229,42 +204,32 @@ The hole advances from one known observation toward the next known observation.
 
 ### Reaching The End Of The Hole
 
-Eventually the next observation found in storage matches:
+Recovery continues only while observations exist before ToDateRaw.
+
+The observation represented by ToDateRaw is already known by PackStationWeather and is not uploaded as a missing observation.
 
 ```text
-hole.ToUtc
+hole.ToDateRaw
 ```
 
-Because PackStationWeather already possesses the `ToUtc` observation, it must not be uploaded again.
+Because PackStationWeather already possesses the `ToDateRaw` observation, it must not be uploaded again.
 
 At this point one of two outcomes occurs.
 
+#### Packbox Boundaries
+
+If recovery reaches the end of a Packbox before reaching the hole boundary, WeatherMule continues searching in the next Packbox.
+
 #### Recovery Successful
 
-If:
-
-```text
-candidate.dateutc == hole.ToUtc
-```
-
-and
-
-```text
-hole.PartiallyFilled == true
-```
-
-then one or more observations were recovered.
-
-The hole is complete.
-
-WeatherMule removes the hole.
+If one or more observations were recovered and no additional observations remain inside the hole, WeatherMule removes the hole.
 
 #### Nothing Was Recorded
 
 If:
 
 ```text
-candidate.dateutc == hole.ToUtc
+candidate.dateutc == hole.ToDateRaw
 ```
 
 and
@@ -290,13 +255,12 @@ Searching from the beginning of a Packbox every time would be inefficient.
 To improve recovery performance, each hole stores:
 
 - FromUtc
+- FromDateRaw
 - ByteOffset
 - PartiallyFilled
 
-The storage subsystem uses `ByteOffset` to return directly to the observation represented by `FromUtc`.
-
-The actual recovery position is represented by `FromUtc`.
-
+The storage subsystem uses ByteOffset to return directly to the observation represented by FromDateRaw.  
+The actual Packbox recovery position is represented by FromDateRaw.  
 `ByteOffset` is only a lookup optimization.
 
 ---
@@ -385,6 +349,8 @@ Fields:
 VendorDeviceKey
 FromUtc
 ToUtc
+FromDateRaw
+ToDateRaw
 PartiallyFilled
 ByteOffset
 ```

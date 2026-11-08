@@ -29,6 +29,7 @@ It also provides the lookup and replay mechanisms used by hole recovery.
 
 - Store observations before attempting delivery.
 - Preserve the original weather station request.
+- Use raw weather station timestamps when locating stored observations.
 - Never modify previously written observations.
 - Use append-only writes.
 - Partition observations into daily Packboxes.
@@ -88,7 +89,7 @@ No fields are removed or transformed during storage.
 
 ### Packbox Selection
 
-Packboxes are organized by UTC date.
+Packboxes are organized by the date contained in the observation timestamp.
 
 The observation timestamp determines which Packbox receives the observation.
 
@@ -100,7 +101,7 @@ Examples:
 2026-08-17.box
 ```
 
-All observations for a given UTC date are stored in the same Packbox.
+All observations for a given observation date are stored in the same Packbox.
 
 ### Observation Replay
 
@@ -110,7 +111,7 @@ When requested to locate an observation:
 
 1. Determine the Packbox associated with the hole.
 2. Open the Packbox.
-3. Search for the requested observation.
+3. Locate the observation matching the hole's FromDateRaw value.
 4. Return observations within the hole range.
 
 The storage subsystem does not decide whether an observation should be replayed.
@@ -157,7 +158,7 @@ To reduce unnecessary scanning, the storage subsystem maintains recovery bookmar
 
 Each partially completed hole stores:
 
-- FromUtc
+- FromDateRaw
 - ByteOffset
 - PartiallyFilled
 
@@ -269,8 +270,8 @@ Used for both storage and replay operations.
 Represents a recovery task and its current replay state.
 
 Storage-related fields include:
-
-- FromUtc
+- FromDateRaw
+- ToDateRaw
 - ByteOffset
 - PartiallyFilled
 

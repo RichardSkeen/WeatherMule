@@ -59,19 +59,13 @@ The payload contains the collection of parsed weather station parameters.
 
 Each parameter is represented as a name/value pair.
 
-### Authentication Check
+### Authentication
 
-Before transmission:
+The upload uses the current session token when available.
 
-1. Verify a session token exists.
-2. If a session token exists:
-   - Continue with upload.
-3. If no session token exists:
-   - Perform authentication.
-   - Obtain new credentials.
-   - Continue with upload.
-
-Authentication is performed only when required.
+If PackStationWeather returns HTTP 401 Unauthorized:
+- WeatherMule performs authentication.
+- The original upload is retried after successful authentication.
 
 ### Upload Request
 
@@ -87,28 +81,19 @@ The request contains:
 
 ```mermaid
 flowchart TD
-
     A[WeatherRequest]
-
     B[Convert To JSON]
-
-    C{Session Token Exists?}
-
-    D[Authenticate]
-
-    E[POST /api/unload]
-
+    C[POST /api/unload]
+    D{401 Unauthorized?}
+    E[Authenticate]
     F[Receive Response]
 
     A --> B
     B --> C
-
-    C -->|No| D
-    D --> E
-
-    C -->|Yes| E
-
-    E --> F
+    C --> D
+    D -->|Yes| E
+    E --> C
+    D -->|No| F
 ```
 
 ### Server Processing
@@ -135,20 +120,6 @@ Before processing the upload response:
 4. Store the returned holes in memory.
 
 The server response becomes the complete synchronization state known to WeatherMule.
-
-### Unauthorized Response
-
-If PackStationWeather returns:
-
-HTTP 401 Unauthorized
-
-WeatherMule:
-
-1. Performs authentication.
-2. Obtains new credentials.
-3. Retries the original request.
-
-This process is automatic and transparent to the caller.
 
 ### Upload Failure
 
@@ -214,7 +185,6 @@ Performs all HTTP POST communication.
 
 Responsibilities:
 
-- Verify authentication.
 - Create connection.
 - Build HTTP request.
 - Submit payload.
@@ -260,10 +230,11 @@ Provides:
 Represents a missing observation range returned by PackStationWeather.
 
 Contains:
-
 - VendorDeviceKey
 - FromUtc
 - ToUtc
+- FromDateRaw
+- ToDateRaw
 - Recovery state information
 
 *Implementation: [Hole.h](../../Hole.h)*
