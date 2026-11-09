@@ -33,10 +33,10 @@ After writing an observation, WeatherMule flushed the data and closed the file. 
 
 Local storage and network delivery were separate tasks. WeatherMule attempted both.
 
-- If the upload succeeded, the weather server had the observation.
-- If local storage succeeded, the mule still had the observation.
-- If both succeeded, the observation existed in two places.
-- Only if both failed was the observation considered lost.
+- If local storage succeeded, the mule had preserved the observation.
+- If the upload succeeded, the Pack Station had received the observation.
+- If both succeeded, the observation was safe in both places.
+- If delivery failed, the Packbox remained available for later recovery.
 
 This made the SD card more than removable storage. It became the mule's durable memory.
 

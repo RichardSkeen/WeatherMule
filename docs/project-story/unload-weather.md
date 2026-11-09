@@ -55,15 +55,16 @@ flowchart TD
     F --> D
 ```
 
-The check-in station only becomes part of the trip when the mule's travel papers have expired.
+The check-in station only becomes part of the trip when the mule's travel papers are missing or no longer valid.
 
-Most deliveries never require a check in.
+As long as the current session remains valid, the mule can unload without another check-in.
 
 ![Unloading Weather](images/unloading.png)
 
 ### Unloading Weather
 
 WeatherMule converts the incoming observation into a collection of field/value pairs and submits them to PackStationWeather.  
+
 *Implementation: [WeatherRequest.h](../../WeatherRequest.h)*
 
 The server records the observation and evaluates whether any weather appears to be missing.

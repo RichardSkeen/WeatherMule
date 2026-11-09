@@ -40,25 +40,28 @@ The project stories describe how WeatherMule evolved, why design decisions were 
 1. [silver-city-use-case.md](project-story/silver-city-use-case.md)  
    Describes the initial use case that motivated the WeatherMule project.
 
-2. [life-of-a-weather-observation.md](project-story/life-of-a-weather-observation.md)  
+2. [the-long-trail-ahead.md](project-story/the-long-trail-ahead.md)  
+   Meet the characters and learn the trail WeatherMule travels.
+
+3. [life-of-a-weather-observation.md](project-story/life-of-a-weather-observation.md)  
    Explains how a weather observation moves through the system, from creation to storage and delivery.
 
-3. [weather-station-data.md](project-story/weather-station-data.md)  
-   Explains how the Ambient Weather protocol was discovered and validated.  
+4. [weather-station-data.md](project-story/weather-station-data.md)  
+   Explains how WeatherMule learned to receive, parse, and preserve weather station observations.  
 
-4. [pack-station-weather.md](project-story/pack-station-weather.md)  
+5. [pack-station-weather.md](project-story/pack-station-weather.md)  
    Describes how the PackStation weather station was integrated into WeatherMule.
 
-5. [packbox-storage.md](project-story/packbox-storage.md)  
-   Describes the design and implementation of the PackBox storage system.
+6. [packbox-storage.md](project-story/packbox-storage.md)  
+   Explains how WeatherMule learned to preserve its cargo and gained its Packboxes.
 
-6. [authentication.md](project-story/authentication.md)  
-   Explains how authentication was implemented in WeatherMule.
+7. [authentication.md](project-story/authentication.md)  
+   Explains how WeatherMule proves its identity and receives temporary travel papers from the Pack Station.
 
-7. [unload-weather.md](project-story/unload-weather.md)  
+8. [unload-weather.md](project-story/unload-weather.md)  
    Explains how the mule unloads weather observations to the pack station.
 
-8. [holes.md](project-story/holes.md)  
+9. [holes.md](project-story/holes.md)  
    Explains how holes in the weather observation data are detected and processed.
 ## Future Development
 #### V2

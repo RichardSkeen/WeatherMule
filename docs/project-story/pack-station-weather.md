@@ -28,7 +28,7 @@ Ambient Weather provided ways for applications to retrieve observations already 
 
 What Ambient Weather did not appear to provide was a supported mechanism for uploading a backlog of historical observations after an outage.
 
-The protocol was clearly intended for real-time reporting.
+Everything we could find suggested that the protocol was intended for real-time reporting.
 
 WeatherMule's entire purpose was delayed reporting.
 

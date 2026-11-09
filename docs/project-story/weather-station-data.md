@@ -128,17 +128,13 @@ This kept both the observation data and the operations performed on that data in
 
 For example, the weather station supplied timestamps in this form:
 
-```text
-2026-08-15+22:18:21
-```
+`2026-08-15+22:18:21`
 
-The plus sign separating the date and time was inconvenient for later processing. `WeatherRequest` converted it into:
+WeatherRequest preserves that original value while also providing a normalized UTC representation when needed:
 
-```text
-2026-08-15T22:18:21
-```
+`2026-08-15T22:18:21Z`
 
-This allowed the rest of WeatherMule to work with a consistent date format without repeatedly performing string manipulation throughout the codebase.
+Keeping both forms eventually became important. The raw weather-station timestamp could be used when working with the original observations, while the normalized form could be used where a standard UTC timestamp was required.
 
 The resulting relationship became:
 

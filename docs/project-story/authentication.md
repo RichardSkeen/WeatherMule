@@ -16,22 +16,23 @@ The solution was to separate identity from daily operations.
 
 ### Arriving at the Pack Station
 
-*Implementation: [ApiClientRoutines.h](../../ApiClientRoutines.h)*
+_Implementation: [ApiClientRoutines.h](../../ApiClientRoutines.h)_  
 
-Before the mule can unload cargo, it stops at the pack station and checks in.
+The mule does not stop at the check-in desk unless it needs to.
 
-The mule presents its API key to:
+When the Pack Station refuses a request because the mule does not have valid travel papers, WeatherMule checks in.
+
+For a new check-in, the mule presents its API key to:
 
 ```http
-   GET /api/checkin
-```
+GET /api/checkin
+```  
 
-If PackStationWeather recognizes the mule, it issues two new credentials:
-
+If the Pack Station recognizes the mule, it issues two new credentials:
 - A session token
 - A refresh token
 
-The mule then stores those credentials in memory and uses them for normal operations.
+The mule stores those credentials in memory and uses them for normal operations.
 
 The permanent API key goes back into the saddlebag and remains unused unless it is needed again.
 
@@ -84,7 +85,7 @@ The mule introduces itself, receives fresh travel papers, and resumes hauling we
 
 Eventually a session token expires.
 
-When PackStationWeather refuses a request with:
+When The Pack Station refuses a request with:
 
     401 Unauthorized
 

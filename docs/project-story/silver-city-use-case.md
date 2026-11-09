@@ -38,25 +38,37 @@ Most software assumes connectivity is available all the time.
 
 Mountain weather does not care about those assumptions.
 
-## Why WeatherMule Exists
+### Why WeatherMule Exists
 
-The Silver City weather station continues collecting observations whether the internet is available or not.
+Under normal conditions, the weather station does exactly what it was designed to do.
 
-Unfortunately, the most interesting weather events often occur during the exact conditions most likely to disrupt connectivity:
+It observes the weather and sends those observations across the internet to the weather company's servers, where they can be viewed remotely.
 
-- Winter storms
-- Heavy snowfall
-- High winds
-- Power interruptions
-- Extended outages
+The problem begins when something interrupts that path.
 
-Those are precisely the observations worth preserving.
+The internet may go down. The community network may become unavailable. Power may be interrupted somewhere along the route. Or the mountain weather itself may interfere with the systems needed to carry an observation from Silver City to the outside world.
 
-WeatherMule was created to ensure that weather data survives long enough to be delivered, even when communication links temporarily disappear.
+The weather station keeps observing the weather, but an observation that cannot be sent is not automatically sent again later.
 
-The guiding principle is simple:
+That creates an unfortunate situation.
 
-> **Save the weather first. Figure everything else out later.**
+The weather may still exist inside the weather station, but recovering it requires someone to be physically present. An SD card must be inserted into the weather station console and the stored observations manually exported.
+
+In most places that would merely be inconvenient.
+
+In Silver City during winter, it can mean waiting until spring.
+
+The very conditions most likely to interrupt the observation's journey to the outside world are also the conditions that can make physically recovering the stored weather impractical for months.
+
+Those are precisely the observations worth preserving and retrieving while they are happening.
+
+WeatherMule was created to stand between the weather station and that unreliable path to the outside world.
+
+When a new observation arrives, the mule takes a copy and places it safely in local storage before attempting to deliver it onward. If the trail to the outside world is unavailable, the observation can wait. When the trail opens again, the mule still has the cargo.
+
+The guiding principle became simple:
+
+**Save the weather first. Figure everything else out later.**
 
 ### Why a Mule?
 

@@ -37,24 +37,15 @@ Every weather observation follows the same general path.
 
 ```mermaid
 flowchart TD
-
     A[Weather Station Creates Observation]
         --> B[WeatherMule Receives Observation]
-
-    B --> C[Forget Existing Hole Assignments]
-
-    C --> D[Save Observation To Packbox]
-
+    B --> C[Save Observation To Packbox]
+    C --> D[Forget Existing Hole Assignments]
     D --> E[Attempt To Unload Observation]
-
     E -->|Successful Upload| F[Receive Fresh Hole List]
-
     E -->|Upload Failed| G[No New Instructions]
-
     F --> H[Wait For More Weather]
-
     G --> I[Graze In Meadow]
-
     I --> H
 ```
 
@@ -86,11 +77,11 @@ The more this idea was explored, the more complicated the mule became.
 
 Eventually a simpler realization appeared.
 
-PackStationWeather already knows what observations have arrived.
+The Pack Station already knows what observations have arrived.
 
-PackStationWeather already knows what observations are missing.
+The Pack Station already knows what observations are missing.
 
-PackStationWeather is the only part of the system capable of seeing the complete picture.
+The Pack Station is the only part of the system capable of seeing the complete picture.
 
 The mule cannot.
 
@@ -144,7 +135,7 @@ Many systems attempt to keep synchronization state in multiple places.
 
 WeatherMule deliberately does not.
 
-PackStationWeather keeps the books.
+The Pack Station keeps the books.
 
 WeatherMule carries cargo.
 
